@@ -1,0 +1,12 @@
+#holder {
+    width: 100%;
+    border: 5px dashed #ccc;
+    color: #ccc;
+    padding: 50px;
+    text-align: center;
+}
+
+#holder.hover {
+    border-color: #0c0;
+    color: #0c0;
+}
