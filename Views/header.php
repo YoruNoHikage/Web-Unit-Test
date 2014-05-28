@@ -51,11 +51,11 @@
                     <form class="form-inline" action="index.php?action=signin" method="post" role="form">
                         <div class="form-group">
                             <label class="sr-only" for="username">Nom d'utilisateur</label>
-                            <input type="text" class="form-control" id="username" placeholder="Nom d'utilisateur">
+                            <input type="text" class="form-control" id="username" name="username" placeholder="Nom d'utilisateur">
                         </div>
                         <div class="form-group">
                             <label class="sr-only" for="password">Mot de passe</label>
-                            <input type="password" class="form-control" id="password" placeholder="Mot de passe">
+                            <input type="password" class="form-control" id="password" name="password" placeholder="Mot de passe">
                         </div>
                         <button type="submit" class="btn btn-default">Connexion</button>
                     </form>

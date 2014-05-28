@@ -1,5 +1,6 @@
 <?php
 	require_once "Model.php";
+	require_once 'Entity/User.php';
 
 	class UserModel extends Model{
 
@@ -20,6 +21,28 @@
 			}
 			return $userArray;
 		}
+		
+		public function getOneUserBy($username)
+        {
+            $sth = $this->execute("SELECT username, firstname, lastname, mail, role FROM users WHERE username = :username",
+                                    array('username' => $username));
+            $req = $sth->fetch();
+            
+            if($req)
+            {
+                var_dump($req);
+                $user = new User();
+                $user->setUsername($req['username']);
+                $user->setFirstname($req['firstname']);
+				$user->setLastname($req['lastname']);
+				$user->setMail($req['mail']);
+                $user->setRole($req['role']);
+                
+                return $user;
+            }
+            
+            return null;
+        }
 
 		public function getUserRole($user){
 			$sth = $this->execute("SELECT role.role FROM role INNER JOIN users ON role.role = users.role AND users.username = :username", 

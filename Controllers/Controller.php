@@ -1,5 +1,7 @@
 <?php
 
+require 'Model/UserModel.php';
+
 class Controller
 {
     public function __construct()
@@ -19,18 +21,25 @@ class Controller
     {
         if($this->getSession('username')) // if already connected
         {
+            echo $this->getSession('username');
             $this->setFlashError('Vous êtes déjà connecté !');
             header("Location: index.php");
         }
-            
-        // if good -> userPanelAction
-        $this->setSession('username', 'Jean-Michel');
-        $this->setSession('role', 'student');
-        $this->setSession('group', '');
-
-        header("Location: index.php?action=userpanel");
-
-        // if bad -> indexAction
+        
+        $usermodel = new UserModel();
+        $user = $usermodel->getOneUserBy($_POST['username']);
+        if($user != null)
+        {
+            $this->setSession('username', $user->getUsername());
+            $this->setSession('role', $user->getRole());
+            $this->setSession('group', '');
+            header("Location: index.php?action=userpanel");
+        }
+        else
+        {
+            $this->setFlashError('Le username n\'existe pas !');
+            header("Location: index.php");
+        }
     }
 
     public function signOutAction()
@@ -46,7 +55,7 @@ class Controller
     {
         if(!$this->getSession('username')) // you have to be connected
         {
-            $this->setFlashError('Vous êtes déjà connecté !');
+            $this->setFlashError('Vous devez être connecté !');
             header("Location: index.php");
         }
             
