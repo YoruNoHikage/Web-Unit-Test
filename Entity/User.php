@@ -115,12 +115,11 @@
 			$this->results = $results;
 		}
 
-		public function addResult($result){
-			// ?
-			array_push($this->results, $result);
+		public function addResult($result, $subtestFullName){
+			$this->results[$subtestFullName] = $result;
 		}
 
-		public function getTestResults($subtest){
+		public function getSubtestResults($subtest){
 			return $this->results[$subtest->getFullName()];
 		}
 

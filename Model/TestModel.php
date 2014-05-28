@@ -3,7 +3,8 @@
 
 	class TestModel extends Model{
 
-		public function getAllTests(){
+		//probably useless
+		/*public function getAllTests(){
 			$testArray = array();
 
 			$sth = $this->execute("SELECT * FROM test");
@@ -16,11 +17,11 @@
 				array_push($testArray, $test);
 			}
 			return $testArray;
-		}
+		}*/
 
 		public function getTestSubtests($test){
-			$sth = $this->execute("SELECT * FROM subtest WHERE subtest.test_name = :testName", 
-				array("testName" => $test->getName()));
+			$sth = $this->execute("SELECT * FROM subtest WHERE subtest.test_name = :testName AND subtest.project_id = :projectId", 
+				array("testName" => $test->getName(), "projectId" => $test->getProject()->getId()));
 			$subtestsDb = $sth->fetchAll();
 			
 			foreach($subtestsDb as $subtestDb){
