@@ -29,36 +29,12 @@ INSERT INTO `groups` (`name`) VALUES
 ('cir2');
 
 --
--- Contenu de la table `project`
---
-
-INSERT INTO `project` (`id`, `username`, `name`, `enabled`, `due_date`) VALUES
-(1, 'jaco', 'robot laby', 1, '2014-05-07 00:00:00'),
-(2, 'yoyolabricot', 'white tile', 0, '2014-05-19 05:50:00');
-
---
 -- Contenu de la table `role`
 --
 
 INSERT INTO `role` (`role`) VALUES
 ('student'),
 ('teacher');
-
---
--- Contenu de la table `subtest`
---
-
-INSERT INTO `subtest` (`project_id`, `test_name`, `name`, `weight`, `kind`) VALUES
-(1, 'TestDroite', 'droitedroite', 5, 'AssertBidule'),
-(1, 'TestDroite', 'droitegauche', 2, 'AssertMachin');
-
---
--- Contenu de la table `test`
---
-
-INSERT INTO `test` (`project_id`, `name`, `description`) VALUES
-(1, 'testDroite', 'testDroite testDroite testDroite'),
-(1, 'testGauche', 'testGauche testGauche testGauche');
 
 --
 -- Contenu de la table `users`
@@ -69,7 +45,31 @@ INSERT INTO `users` (`username`, `hash`, `firstname`, `lastname`, `mail`, `role`
 ('bogoss', '', 'stephane', 'perreaux', 'bogoss@mail.fr', 'student'),
 ('jaco', '', 'gilles', 'jacovetti', 'jaco@mail.fr', 'teacher'),
 ('pizza', '', 'theo', 'fundone', 'pizza@mail.fr', 'student'),
-('yoyolabricot', '', 'yohann', 'tran', 'yoyo@mail.fr', 'student');
+('yoyolabricot', '', 'yohann', 'tran', 'yoyo@mail.fr', 'teacher');
+
+--
+-- Contenu de la table `project`
+--
+
+INSERT INTO `project` (`id`, `username`, `name`, `enabled`, `due_date`) VALUES
+(1, 'jaco', 'robot laby', 1, '2014-05-07 00:00:00'),
+(2, 'yoyolabricot', 'white tile', 0, '2014-05-19 05:50:00');
+
+--
+-- Contenu de la table `test`
+--
+
+INSERT INTO `test` (`project_id`, `name`, `description`) VALUES
+(1, 'testDroite', 'testDroite testDroite testDroite'),
+(1, 'testGauche', 'testGauche testGauche testGauche');
+
+--
+-- Contenu de la table `subtest`
+--
+
+INSERT INTO `subtest` (`project_id`, `test_name`, `name`, `weight`, `kind`) VALUES
+(1, 'TestDroite', 'droitedroite', 5, 'AssertBidule'),
+(1, 'TestDroite', 'droitegauche', 2, 'AssertMachin');
 
 --
 -- Contenu de la table `users_groups`
