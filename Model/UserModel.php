@@ -71,5 +71,17 @@
 			return $user;
 		}
 
-
+		public function getUserResults($user){
+			$sth = $this->execute("SELECT * FROM users_test WHERE users_test.username = :username", 
+				array("username" => $user->getUsername()));
+			$resultsDb = $sth->fetchAll();
+			
+			foreach($resultsDb as $resultDb){
+				$result = new Result();
+				$result->setStatus($resultDb["status"]);
+				$result->setError($resultDb["errors"]);
+				$user->addResult($subtest, $resultDb["subtest_name"] . ":" . $resultDb["test_name"] . ":"  . $resultDb["project_id"]);
+			}
+			return $user;
+		}
 	}

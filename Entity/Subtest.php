@@ -55,9 +55,8 @@
 			$this->results = $results;
 		}
 
-		public function addResult($result){
-			// ?
-			array_push($this->results, $result);
+		public function addResult($result, $username){
+			$this->results[$username] = $result;
 		}
 
 		public function getUserResults($user){
