@@ -73,6 +73,10 @@
 			$this->groups = $groups;
 		}
 
+		public function resetGroups(){
+			$this->groups = array();
+		}
+
 		public function addGroup($group){
 			// ?
 			array_push($this->groups, $group);
@@ -95,6 +99,10 @@
 			$this->projects = $projects;
 		}
 
+		public function resetProjects(){
+			$this->projects = array();
+		}
+
 		public function addProject($project){
 			$project->setOwner($this);
 			array_push($this->projects, $project);
@@ -113,6 +121,10 @@
 
 		public function setResults($results){
 			$this->results = $results;
+		}
+
+		public function resetResults(){
+			$this->results = array();
 		}
 
 		public function addResult($result, $subtestFullName){

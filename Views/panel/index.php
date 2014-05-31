@@ -1,9 +1,10 @@
 <?php
     require_once '/Views/header.php';
     
-    if(isset($_SESSION['username'])) // If the user is logged in
+    if(isset($_SESSION['user'])) // If the user is logged in
     {
-        if($_SESSION['role'] == 'teacher')
+        $user = unserialize($_SESSION['user']);
+        if($user->getRole() == 'teacher')
         {
 ?>
     <div class="row">
@@ -25,7 +26,7 @@
                 <li>
                     <a href="index.php?action=project&id=1">Projet 1</a>
                 <?php
-                    if($_SESSION['role'] == 'student')
+                    if($user->getRole() == 'student')
                     {
                 ?>
                     <a href="index.php?action=uploadsources&id=1" class="btn btn-primary">
@@ -35,7 +36,7 @@
                 <?php
                     }
                     
-                    if($_SESSION['role'] == 'teacher')
+                    if($user->getRole() == 'teacher')
                     {
                 ?>
                     <a href="index.php?action=editproject&id=1" class="btn btn-primary">
@@ -53,7 +54,7 @@
             </ul>
         </div>
         <?php
-            if($_SESSION['role'] == 'teacher')
+            if($user->getRole() == 'teacher')
             {
         ?>
         <div class="col-md-6">

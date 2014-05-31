@@ -11,6 +11,28 @@ class Controller
         else
             $this->setSession('flashToDelete', true);
     }
+
+    public function connectedOnly()
+    {
+        if(!$this->getSession('user')) // you have to be connected
+        {
+            $this->setFlashError('Vous devez être connecté !');
+            header("Location: index.php");
+        }
+        else
+            return unserialize($this->getSession('user'));
+    }
+
+    public function teacherOnly($user)
+    {
+        if($user->getRole != 'teacher') // you have to be a teacher
+        {
+            $this->setFlashError('Vous n\'avez pas les droits nécessaires !');
+            header("Location: index.php");
+        }
+        else
+            return true;
+    }
     
     public function indexAction()
     {
@@ -19,9 +41,10 @@ class Controller
 
     public function signInAction()
     {
-        if($this->getSession('username')) // if already connected
+        var_dump($_SESSION);
+        if($this->getSession('user')) // if already connected
         {
-            echo $this->getSession('username');
+            //echo $this->getSession('user');
             $this->setFlashError('Vous êtes déjà connecté !');
             header("Location: index.php");
         }
@@ -30,9 +53,7 @@ class Controller
         $user = $usermodel->getOneUserBy($_POST['username']);
         if($user != null)
         {
-            $this->setSession('username', $user->getUsername());
-            $this->setSession('role', $user->getRole());
-            $this->setSession('group', '');
+            $this->setSession('user', serialize($user));
             header("Location: index.php?action=userpanel");
         }
         else
@@ -53,22 +74,13 @@ class Controller
 
     public function userPanelAction()
     {
-        if(!$this->getSession('username')) // you have to be connected
-        {
-            $this->setFlashError('Vous devez être connecté !');
-            header("Location: index.php");
-        }
-            
+        //$this->connectedOnly();        
         require 'Views/panel/index.php';
     }
     
     public function uploadSourcesAction()
     {
-        if(!$this->getSession('username')) // you have to be connected
-        {
-            $this->setFlashError('Vous devez être connecté !');
-            header("Location: index.php");
-        }
+        $this->connectedOnly();
             
         if($_SERVER['REQUEST_METHOD'] == 'POST')
         {
@@ -81,17 +93,8 @@ class Controller
 
     public function newProjectAction()
     {
-        if(!$this->getSession('username')) // you have to be connected
-        {
-            $this->setFlashError('Vous devez être connecté !');
-            header("Location: index.php");
-        }
-
-        if($this->getSession('role') != 'teacher') // you have to be a teacher
-        {
-            $this->setFlashError('Vous n\'avez pas les droits nécessaires !');
-            header("Location: index.php");
-        }
+        $user = $this->connectedOnly();
+        $this->teacherOnly($user);
 
         if($_SERVER['REQUEST_METHOD'] == 'POST') // first form was sent
         {
@@ -104,17 +107,8 @@ class Controller
     // fired with the second new form
     public function createProjectAction()
     {
-        if(!$this->getSession('username')) // you have to be connected
-        {
-            $this->setFlashError('Vous devez être connecté !');
-            header("Location: index.php");
-        }
-        
-        if($this->getSession('role') != 'teacher') // you have to be a teacher
-        {
-            $this->setFlashError('Vous n\'avez pas les droits nécessaires !');
-            header("Location: index.php");
-        }
+        $user = $this->connectedOnly();
+        $this->teacherOnly($user);
             
         if($_SERVER['REQUEST_METHOD'] != 'POST')
             header("Location: index.php?action=newproject");
@@ -126,51 +120,24 @@ class Controller
     
     public function projectAction()
     {
-        if(!$this->getSession('username')) // you have to be connected
-        {
-            $this->setFlashError('Vous devez être connecté !');
-            header("Location: index.php");
-        }
-        
-        if($this->getSession('role') != 'teacher') // you have to be a teacher
-        {
-            $this->setFlashError('Vous n\'avez pas les droits nécessaires !');
-            header("Location: index.php");
-        }
+        $user = $this->connectedOnly();
+        $this->teacherOnly($user);
             
         require 'Views/panel/project.php';
     }
     
     public function editProjectAction()
     {
-        if(!$this->getSession('username')) // you have to be connected
-        {
-            $this->setFlashError('Vous devez être connecté !');
-            header("Location: index.php");
-        }
-        
-        if($this->getSession('role') != 'teacher') // you have to be a teacher
-        {
-            $this->setFlashError('Vous n\'avez pas les droits nécessaires !');
-            header("Location: index.php");
-        }
+        $user = $this->connectedOnly();
+        $this->teacherOnly($user);
             
         require 'Views/panel/editproject.php';
     }
     
     public function deleteProjectAction()
     {
-        if(!$this->getSession('username')) // you have to be connected
-        {
-            $this->setFlashError('Vous devez être connecté !');
-            header("Location: index.php");
-        }
-        
-        if($this->getSession('role') != 'teacher') // you have to be a teacher
-        {
-            $this->setFlashError('Vous n\'avez pas les droits nécessaires !');
-            header("Location: index.php");
-        }
+        $user = $this->connectedOnly();
+        $this->teacherOnly($user);
             
         if($_SERVER['REQUEST_METHOD'] == 'POST') // if we confirm the deletion
         {

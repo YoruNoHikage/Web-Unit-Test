@@ -60,6 +60,10 @@
 			$this->tests = $tests;
 		}
 
+		public function resetTests(){
+			$this->tests = array();
+		}
+
 		public function addTest($test){
 			$test->setProject($this);
 			array_push($this->tests, $test);

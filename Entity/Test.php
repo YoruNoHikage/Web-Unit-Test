@@ -46,6 +46,10 @@
 			$this->subtests = $subtests;
 		}
 
+		public function resetSubtests(){
+			$this->subtests = array();
+		}
+
 		public function addSubtest($subtest){
 			$subtest->setTest($this);
 			array_push($this->subtests, $subtest);

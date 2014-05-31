@@ -55,6 +55,11 @@
 			$this->results = $results;
 		}
 
+		public function resetResults(){
+			//cote user ?
+			$this->results = array();
+		}
+
 		public function addResult($result, $username){
 			$this->results[$username] = $result;
 		}

@@ -43,6 +43,7 @@
 				array("projectId" => $project->getId()));
 			$testsDb = $sth->fetchAll();
 
+			$project->resetTests();
 			foreach($testsDb as $testDb){
 				$test = new Test();
 				$test->setName($testDb["name"]);

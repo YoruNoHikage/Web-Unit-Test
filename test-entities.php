@@ -23,7 +23,6 @@
 
 	//pas de *
 	//verification de non existence avant 1 add
-	//verif des test->soustest app bien au meme proj
 
 	$projectModel = new ProjectModel();
 	$testModel = new TestModel();

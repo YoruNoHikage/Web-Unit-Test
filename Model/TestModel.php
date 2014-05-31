@@ -23,7 +23,8 @@
 			$sth = $this->execute("SELECT * FROM subtest WHERE subtest.test_name = :testName AND subtest.project_id = :projectId", 
 				array("testName" => $test->getName(), "projectId" => $test->getProject()->getId()));
 			$subtestsDb = $sth->fetchAll();
-			
+
+			$test->resetSubtests();
 			foreach($subtestsDb as $subtestDb){
 				$subtest = new Subtest();
 				$subtest->setName($subtestDb["name"]);
