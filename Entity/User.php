@@ -127,19 +127,26 @@
 			$this->results = array();
 		}
 
-		public function addResult($result, $subtestFullName){
-			$this->results[$subtestFullName] = $result;
-		}
-
-		public function getSubtestResults($subtest){
-			return $this->results[$subtest->getFullName()];
+		public function addResult($result, $subtest)
+		{
+			//array
+			array_push($this->results, array("result" => $result, "subtest" => $subtest));	
 		}
 
 		public function removeResult($subtest){
-			if(isset($results[$subtest->getFullName()])){
-				$user->removeResult($this);
-				unset($results[$user->getUsername()]);
+			//
+		}
+
+		public function getFinalMark($project)
+		{
+			$finalMark = 0;
+			$results = $this->getResults();
+			foreach($results as $result)
+			{
+				if($result["result"]->getStatus() and in_array($project->getId(), explode(":", $result["subtest"]->getFullname())))
+					$finalMark += intval($result["subtest"]->getWeight()); 
 			}
+			return $finalMark;
 		}
 
 		public function toString(){

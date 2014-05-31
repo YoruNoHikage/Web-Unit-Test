@@ -2,10 +2,10 @@
 	class Subtest {
 		
 		private $name;
+		private $fullname;
 		private $weight;
 		private $kind;
 		private $test;
-		private $results;
 
 		function __construct(){
 			$this->results = array();
@@ -15,12 +15,18 @@
 			return $this->name;
 		}
 
-		public function getFullName(){
-			return $this->name + ":" + $this->test->getFullName();
-		}
-
 		public function setName($name){
 			$this->name = $name;
+		}
+
+		public function getFullname()
+		{
+			return $this->fullname;
+		}
+
+		public function setFullname($fullname)
+		{
+			$this->fullname = $fullname;
 		}
 
 		public function getWeight(){
@@ -51,7 +57,7 @@
 			return $this->results;
 		}
 
-		public function setResults($results){
+		/*public function setResults($results){
 			$this->results = $results;
 		}
 
@@ -73,6 +79,6 @@
 				$user->removeResult($this);
 				unset($results[$user->getUsername()]);
 			}
-		}
+		}*/
 	}
 ?>

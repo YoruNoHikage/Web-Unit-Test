@@ -1,6 +1,12 @@
 <?php
+require_once 'Entity/User.php';
+require_once 'Entity/Test.php';
+require_once 'Entity/Subtest.php';
+require_once 'Entity/Result.php';
+require_once 'Entity/Project.php';
 
 require 'Model/UserModel.php';
+require 'Model/ProjectModel.php';
 
 class Controller
 {
@@ -25,7 +31,7 @@ class Controller
 
     public function teacherOnly($user)
     {
-        if($user->getRole != 'teacher') // you have to be a teacher
+        if($user->getRole() != 'teacher') // you have to be a teacher
         {
             $this->setFlashError('Vous n\'avez pas les droits nécessaires !');
             header("Location: index.php");
@@ -74,7 +80,23 @@ class Controller
 
     public function userPanelAction()
     {
-        //$this->connectedOnly();        
+        $user = $this->connectedOnly();
+        //on va recuperer les resultats de l'utilisateur
+        $userModel = new UserModel();
+        $user = $userModel->getUserResults($user);
+
+        //on va ensuite recuperer les id de projets auxquel l'utilisateur a participe
+        $results = $user->getResults();
+        $projectIds = array();
+        foreach($results as $key => $result)
+        {
+            $fullNameArray = explode(":", $key);
+            if(!in_array($fullNameArray[2], $projectIds))
+                array_push($projectIds, $fullNameArray[2]);
+        }
+        $projectModel = new ProjectModel();
+        $projects = $projectModel->getAllProjects($projectIds);
+
         require 'Views/panel/index.php';
     }
     
@@ -122,7 +144,24 @@ class Controller
     {
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
-            
+
+        if(isset($_GET['id']))
+            $projectId = $_GET['id'];
+        else
+        {
+            $this->setFlashError('Mauvais paramètres !');
+            header("Location: index.php");
+        }
+
+        $projectModel = new ProjectModel();
+        $project = $projectModel->getOneProjectBy($projectId);
+        
+        $projectTotalWeight = $projectModel->getProjectTotalWeight($project);
+
+        $project = $projectModel->getProjectTests($project);
+
+        $participants = $projectModel->getProjectParticipants($project);
+
         require 'Views/panel/project.php';
     }
     

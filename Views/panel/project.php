@@ -15,9 +15,13 @@
                 </tr>
             </thead>
             <tbody>
+                <?php
+                    foreach($participants as $participant)
+                    {
+                ?>
                 <tr>
-                    <td>Goanvic</td>
-                    <td>Maxime</td>
+                    <td><?php echo $participant->getLastname(); ?></td>
+                    <td><?php echo $participant->getFirstname(); ?></td>
                     <td>
                         <input type="checkbox" checked disabled />
                     </td>
@@ -25,20 +29,11 @@
                         <button type="submit" class="btn btn-success">Lancer les tests</button>
                         <button type="submit" class="btn btn-primary">Voir les résultats</button>
                     </td>
-                    <td>15/20</td>
+                    <td><?php echo $participant->getFinalMark($project); ?> / <?php echo $projectTotalWeight; ?></td>
                 </tr>
-                <tr>
-                    <td>Tran</td>
-                    <td>Yohann</td>
-                    <td>
-                        <input type="checkbox" disabled />
-                    </td>
-                    <td>
-                        <button type="submit" class="btn btn-success">Lancer les tests</button>
-                        <button type="submit" class="btn btn-primary">Voir les résultats</button>
-                    </td>
-                    <td>0/20</td>
-                </tr>
+                <?php
+                    }
+                ?>
             </tbody>
         </table>
     </div>

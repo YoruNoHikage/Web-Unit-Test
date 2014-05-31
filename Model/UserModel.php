@@ -1,6 +1,5 @@
 <?php
 	require_once "Model.php";
-	require_once 'Entity/User.php';
 
 	class UserModel extends Model{
 
@@ -79,31 +78,41 @@
 			$projectsDb = $sth->fetchAll();
 
 			foreach($projectsDb as $projectDb){
-				if($projectDb["id"] != null
-					&& $projectDb["name"] != null
-					&& $projectDb["enabled"] != null
-					&& $projectDb["due_date"] != null){
-						$project = new Project();
-						$project->setId($projectDb["id"]);
-						$project->setName($projectDb["name"]);
-						$project->setEnabled($projectDb["enabled"]);
-						$project->setDue_date($projectDb["due_date"]);
-						$user->addProject($project);
-				}
+				
+				$project = new Project();
+				$project->setId($projectDb["id"]);
+				$project->setName($projectDb["name"]);
+				$project->setEnabled($projectDb["enabled"]);
+				$project->setDue_date($projectDb["due_date"]);
+				$user->addProject($project);
 			}
 			return $user;
 		}
 
 		public function getUserResults($user){
-			$sth = $this->execute("SELECT * FROM users_test WHERE users_test.username = :username", 
+			$sth = $this->execute("SELECT users_test.*, subtest.* FROM users
+				INNER JOIN users_test ON users.username = users_test.username
+				INNER JOIN subtest ON users_test.subtest_name = subtest.name
+				AND users_test.test_name = subtest.test_name
+				AND users_test.project_id = subtest.project_id
+				WHERE users.username = :username", 
 				array("username" => $user->getUsername()));
+
 			$resultsDb = $sth->fetchAll();
 			
 			foreach($resultsDb as $resultDb){
 				$result = new Result();
 				$result->setStatus($resultDb["status"]);
 				$result->setError($resultDb["errors"]);
-				$user->addResult($subtest, $resultDb["subtest_name"] . ":" . $resultDb["test_name"] . ":"  . $resultDb["project_id"]);
+
+				//full subtest name ?
+				$subtest = new Subtest();
+				$subtest->setName($resultb["name"]);
+				$subtest->setFullname($resultb["name"] . ":" . $resultDb["test_name"] . ":" . $resultDb["project_id"]);
+				$subtest->setWeight($resultDb["weight"]);
+				$subtest->setKind($resultDb["kind"]);
+
+				$user->addResult($result, $subtest);
 			}
 			return $user;
 		}

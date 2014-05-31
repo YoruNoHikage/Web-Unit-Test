@@ -23,34 +23,47 @@
         <div class="col-md-6">
             <h2>Derniers projets</h2>
             <ul>
-                <li>
-                    <a href="index.php?action=project&id=1">Projet 1</a>
                 <?php
-                    if($user->getRole() == 'student')
-                    {
+                    foreach($projects as $project)
+                    { 
                 ?>
-                    <a href="index.php?action=uploadsources&id=1" class="btn btn-primary">
-                        <span class="glyphicon glyphicon-upload"></span>
-                        Envoyer des sources
-                    </a>
+                    <li>
+                    <?php
+                        if($user->getRole() == 'student')
+                        {
+                    ?>
+                        <?php echo $project->getName(); ?>
+                        <a href="index.php?action=uploadsources&id=<?php echo $project->getId(); ?>" class="btn btn-primary">
+                            <span class="glyphicon glyphicon-upload"></span>
+                            Envoyer des sources
+                        </a>
+                    <?php
+                        }
+                        if($user->getRole() == 'teacher')
+                        {
+                    ?>
+                        <a href="index.php?action=project&id=<?php echo $project->getId(); ?>"><?php echo $project->getName(); ?></a>
+                        <a href="index.php?action=editproject&id=<?php echo $project->getId(); ?>" class="btn btn-primary">
+                            <span class="glyphicon glyphicon-pencil"></span>
+                            Éditer
+                        </a>
+                        <a href="index.php?action=deleteproject&id=<?php echo $project->getId(); ?>" class="btn btn-danger">
+                            <span class="glyphicon glyphicon-remove"></span>
+                            Supprimer
+                        </a>
+                    <?php
+                        }
+                        if(!in_array($project->getId(), $projectIds))
+                        {
+                    ?>
+                            Aucun depot
+                    <?php
+                        }
+                    ?>
+                    </li>
                 <?php
                     }
-                    
-                    if($user->getRole() == 'teacher')
-                    {
                 ?>
-                    <a href="index.php?action=editproject&id=1" class="btn btn-primary">
-                        <span class="glyphicon glyphicon-pencil"></span>
-                        Éditer
-                    </a>
-                    <a href="index.php?action=deleteproject&id=1" class="btn btn-danger">
-                        <span class="glyphicon glyphicon-remove"></span>
-                        Supprimer
-                    </a>
-                <?php
-                    }
-                ?>
-                </li>
             </ul>
         </div>
         <?php
