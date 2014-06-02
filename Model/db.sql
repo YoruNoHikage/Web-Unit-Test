@@ -34,7 +34,7 @@ create table groups
 /*==============================================================*/
 create table project
 (
-   id                   int not null,
+   id                   int not null auto_increment,
    username             varchar(20) not null,
    name                 varchar(20) not null,
    enabled              bool not null,
