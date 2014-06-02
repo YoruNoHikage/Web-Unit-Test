@@ -2,6 +2,7 @@
 	class Test {
 		
 		private $name;
+		private $fullname;
 		private $description;
 		private $project;
 		private $subtests;
@@ -14,12 +15,17 @@
 			return $this->name;
 		}
 
-		public function getFullName(){
-			return $this->name + ":" + $this->project->getId();
-		}
-
 		public function setName($name){
 			$this->name = $name;
+		}
+
+		public function getFullname(){
+			return $this->fullname;
+		}
+
+		public function setFullname($fullname)
+		{
+			$this->fullname = $fullname;
 		}
 
 		public function getDescription(){
@@ -44,6 +50,10 @@
 
 		public function setSubtests($subtests){
 			$this->subtests = $subtests;
+		}
+
+		public function resetSubtests(){
+			$this->subtests = array();
 		}
 
 		public function addSubtest($subtest){

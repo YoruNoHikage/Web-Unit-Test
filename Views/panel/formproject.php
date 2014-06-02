@@ -4,14 +4,14 @@
         <div class="form-group">
             <label for="name" class="col-sm-3 control-label">Nom du projet</label>
             <div class="col-sm-9">
-                <input type="text" class="form-control" id="name" placeholder="Nom du projet">
+                <input type="text" class="form-control" id="name" name="name" placeholder="Nom du projet" required>
             </div>
         </div>
 
         <div class="form-group">
             <label for="password" class="col-sm-3 control-label">Date</label>
             <div class="col-sm-9">
-                <input type="datetime" class="form-control" id="date" placeholder="AAAA-MM-JJ HH:mm">
+                <input type="datetime" class="form-control" id="date" name="due_date" placeholder="AAAA-MM-JJ HH:mm" required>
             </div>
         </div>
 

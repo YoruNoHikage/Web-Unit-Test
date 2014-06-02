@@ -1,42 +1,37 @@
 <div class="col-md-8 col-md-push-2">
 
     <form class="form-horizontal" action="index.php?action=createproject" method="post" role="form">
-
-        <h3>Test 1</h3>
-
-        <div class="form-group">
-            <label for="password" class="col-sm-6 control-label">maSuperFonctionDeLaMort</label>
-            <div class="col-sm-2">
-                <select class="form-control">
-                    <?php 
-                        for($i = 1 ; $i <= 5 ; $i++)
+        <?php
+            foreach($filesToProcess as $fileToProcess)
+            {
+        ?>
+                <h3><?php echo $fileToProcess['class']; ?></h3>
+                <div class="form-group">
+                    <?php
+                        $subtests = $fileToProcess['subtests'];
+                        foreach ($subtests as $subtest)
                         {
                     ?>
-                            <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+                            <label for="password" class="col-sm-6 control-label"><?php echo $subtest; ?></label>
+                            <div class="col-sm-2">
+                                <select class="form-control">
+                                    <?php 
+                                        for($i = 1 ; $i <= 5 ; $i++)
+                                        {
+                                    ?>
+                                            <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
+                                    <?php
+                                        }
+                                    ?>
+                                </select>
+                            </div>
                     <?php
                         }
                     ?>
-                </select>
-            </div>
-        </div>
-
-        <h3>Test 2</h3>
-
-        <div class="form-group">
-            <label for="password" class="col-sm-6 control-label">maSuperFonctionDeOuf</label>
-            <div class="col-sm-2">
-                <select class="form-control">
-                    <?php 
-                        for($i = 1 ; $i <= 5 ; $i++)
-                        {
-                    ?>
-                            <option value="<?php echo $i; ?>"><?php echo $i; ?></option>
-                    <?php
-                        }
-                    ?>
-                </select>
-            </div>
-        </div>
+                </div>
+        <?php
+            }
+        ?>
 
         <div class="form-group">
             <div class="col-sm-offset-6 col-sm-9">

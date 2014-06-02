@@ -8,6 +8,7 @@
 				array("subtestName" => $subtest->getName(), "testName" => $subtest->getTest()->getName(), "projectId" => $subtest->getTest()->getProject()->getId()));
 			$resultsDb = $sth->fetchAll();
 			
+			$test->resetResults();
 			foreach($resultsDb as $resultDb){
 				$result = new Result();
 				$result->setStatus($resultDb["status"]);

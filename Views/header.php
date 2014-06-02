@@ -27,14 +27,15 @@
                 </div>
                 <div class="col-md-6 bg-primary text-center logbox">
                 <?php
-                    if(isset($_SESSION['username'])) // If the user is logged in
+                    if(isset($_SESSION['user'])) // If the user is logged in
                     {
+                        $user = unserialize($_SESSION['user']);
                 ?>
-                        <p class="col-md-6"><?php echo $_SESSION['username']; ?></p>
+                        <p class="col-md-6"><?php echo $user->getUsername() ?></p>
                         <div class="col-md-3">
                             <a href="index.php?action=userpanel" class="btn btn-primary">
                                 <span class="glyphicon glyphicon-user"></span>
-                                <?php echo $_SESSION['role'] == 'teacher' ? 'Administration' : 'Panel'; ?>
+                                <?php echo $user->getRole() == 'teacher' ? 'Administration' : 'Panel'; ?>
                             </a>
                         </div>
                         <div class="col-md-3">
