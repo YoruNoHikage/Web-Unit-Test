@@ -5,7 +5,7 @@
     </p>
     <p id="upload" class="hidden">
         <label>Drag & drop not supported, but you can still upload via this input field:<br/>
-            <input type="file">
+            <input type="file" name="userfile">
         </label>
     </p>
     <p id="filereader">File API & FileReader API not supported</p>

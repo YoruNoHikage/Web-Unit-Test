@@ -88,9 +88,9 @@ class Controller
         //on va ensuite recuperer les id de projets auxquel l'utilisateur a participe
         $results = $user->getResults();
         $projectIds = array();
-        foreach($results as $key => $result)
+        foreach($results as $result)
         {
-            $fullNameArray = explode(":", $key);
+            $fullNameArray = explode(":", $result["subtest"]->getFullname());
             if(!in_array($fullNameArray[2], $projectIds))
                 array_push($projectIds, $fullNameArray[2]);
         }
@@ -113,13 +113,67 @@ class Controller
         require 'Views/panel/uploadsources.php';
     }
 
+    public function uploadTmpAction()
+    {
+        $user = $this->connectedOnly();
+        $this->teacherOnly($user);
+
+        $uploadDir = 'Projects/tmp/' .$user->getUsername();
+        if(!is_dir($uploadDir))
+            mkdir($uploadDir, 0777, true);
+
+        $uploadFile = $uploadDir . '/' . basename($_FILES['file']['name']);
+
+        move_uploaded_file($_FILES['file']['tmp_name'], $uploadFile);
+    }
+
     public function newProjectAction()
     {
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
 
+        //nous allons verifier tous les fichiers dans le rep tmp de l'utilisateur
+        $url = 'Projects/tmp/' . $user->getUsername();
+        $filenames = scandir($url);
+
+        $filesToProcess = array();
+        //pour chaque fichier à traiter
+        foreach($filenames as $filename)
+        {
+            $filenameExploded = explode('.', $filename);
+            $extension = end($filenameExploded);
+            //on verifie que l'extension est bien .java
+            if($extension == 'java')
+            {
+                $file = fopen($url . '/' . $filename, 'r');
+                $content = fread($file, filesize($url . '/' . $filename));
+                fclose($file);
+
+                preg_match_all('#@Test([\t\n\r\s])+public void (.*?)\(#', $content, $matches);
+                $testFuncs = $matches[2];
+                array_push($filesToProcess, array('class' => $filenameExploded[0], 'subtests' => $testFuncs));
+            }
+        }
+
         if($_SERVER['REQUEST_METHOD'] == 'POST') // first form was sent
         {
+            //on verif que les champs ont bien ete remplis
+            if(isset($_POST['name']) && isset($_POST['due_date']))
+            {
+                $projectModel = new ProjectModel(); 
+                $project = new Project();
+                $project->setName($_POST['name']);
+                $project->setEnabled(1);
+                $project->setDue_date($_POST['due_date']);
+                $project->setOwner($user);
+                $projectModel->newProject($project);
+            }
+            else
+            {
+                $this->setFlashError('Veuillez remplir tous les champs');
+                header("Location: index.php?action=newproject");
+            }
+
             require 'Views/panel/newproject.php';
         }
         else

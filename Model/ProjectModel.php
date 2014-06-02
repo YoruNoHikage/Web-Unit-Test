@@ -147,4 +147,15 @@
 
 			return $totalWeight;
 		}
+
+		public function newProject($project)
+		{
+			$sth = $this->execute("INSERT INTO project (username, name, enabled, due_date) VALUES (:username, :projectName, :enabled, NOW())", array(
+				"username" => $project->getOwner()->getUsername(),
+				"projectName" => $project->getName(),
+				"enabled" => $project->getEnabled()
+				/*"due_date" => $project->getDue_date()*/
+			));
+
+		}
 	}

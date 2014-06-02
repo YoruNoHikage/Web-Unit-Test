@@ -66,7 +66,7 @@ window.onload = function () {
         progressBar = element.getElementsByClassName('progress-bar')[0];
 
         var xhr = new XMLHttpRequest();
-        xhr.open('POST', '/index.php?action=upload');
+        xhr.open('POST', 'index.php?action=uploadTmp');
         xhr.onload = function (progressBar) {
             this.progressBar.style.width = '100%';
             this.progressBar.setAttribute('aria-valuenow', 100);

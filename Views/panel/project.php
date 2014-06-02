@@ -29,7 +29,19 @@
                         <button type="submit" class="btn btn-success">Lancer les tests</button>
                         <button type="submit" class="btn btn-primary">Voir les résultats</button>
                     </td>
-                    <td><?php echo $participant->getFinalMark($project); ?> / <?php echo $projectTotalWeight; ?></td>
+                    <td>
+                        <a href="#" class="tip" data-toggle="tooltip" data-original-title="
+                            <?php
+                                $results = $participant->getResults();
+                                foreach($results as $result)
+                                {
+                                    echo $result["subtest"]->getName() . ":" . ($result["result"]->getStatus() ? $result["subtest"]->getWeight() : "KO") . "<br/>";
+                                }
+                            ?>
+                        " data-placement="right">
+                            <?php echo $participant->getFinalMark($project); ?> / <?php echo $projectTotalWeight; ?>
+                        </a>
+                    </td>
                 </tr>
                 <?php
                     }

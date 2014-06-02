@@ -107,13 +107,13 @@
 
 				//full subtest name ?
 				$subtest = new Subtest();
-				$subtest->setName($resultb["name"]);
-				$subtest->setFullname($resultb["name"] . ":" . $resultDb["test_name"] . ":" . $resultDb["project_id"]);
+				$subtest->setName($resultDb["name"]);
+				$subtest->setFullname($resultDb["name"] . ":" . $resultDb["test_name"] . ":" . $resultDb["project_id"]);
 				$subtest->setWeight($resultDb["weight"]);
 				$subtest->setKind($resultDb["kind"]);
 
 				$user->addResult($result, $subtest);
 			}
 			return $user;
-		}
+		}	
 	}
