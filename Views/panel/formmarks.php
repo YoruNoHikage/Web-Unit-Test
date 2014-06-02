@@ -1,6 +1,6 @@
 <div class="col-md-8 col-md-push-2">
 
-    <form class="form-horizontal" action="index.php?action=createproject" method="post" role="form">
+    <form class="form-horizontal" action="index.php?action=addtests&id=<?php echo $project->getId() ?>" method="post" role="form">
         <?php
             foreach($filesToProcess as $fileToProcess)
             {
@@ -14,7 +14,7 @@
                     ?>
                             <label for="password" class="col-sm-6 control-label"><?php echo $subtest; ?></label>
                             <div class="col-sm-2">
-                                <select class="form-control">
+                                <select name="<?php echo $subtest . ':' . $fileToProcess['class'] . ':' . $project->getId(); ?>" class="form-control">
                                     <?php 
                                         for($i = 1 ; $i <= 5 ; $i++)
                                         {

@@ -150,12 +150,51 @@
 
 		public function newProject($project)
 		{
+			//envoi du projet
 			$sth = $this->execute("INSERT INTO project (username, name, enabled, due_date) VALUES (:username, :projectName, :enabled, NOW())", array(
 				"username" => $project->getOwner()->getUsername(),
 				"projectName" => $project->getName(),
 				"enabled" => $project->getEnabled()
 				/*"due_date" => $project->getDue_date()*/
 			));
+			//on recupere son id
+			$sth = $this->execute("SELECT LAST_INSERT_ID() as lastInsertId");
+			$req = $sth->fetch();
+			$project->setId(intval($req["lastInsertId"]));
+		}
 
+		public function addTests($projectId, $tests)
+		{
+			$testsQuery = "INSERT INTO test (project_id, name, description) VALUES ";
+			$subtestsQuery = "INSERT INTO subtest (project_id, test_name, name, weight, kind) VALUES ";
+
+			$testEntries = array();
+			$subtestEntries = array();
+			$testParams = array();
+			$subtestParams = array();
+			$i = 0;
+
+			foreach($tests as $test)
+			{
+				array_push($testEntries, "(:project_id_" . $i . ", :name_" . $i . ", :description_" . $i . ")");
+				$testParams["project_id_" . $i] = $projectId;
+				$testParams["name_" . $i] = $test->getName();
+				$testParams["description_" . $i] = $test->getDescription();
+				$i++;
+
+				$subtests = $test->getSubtests();
+				foreach($subtests as $subtest)
+				{
+					array_push($subtestEntries, "(:project_id_" . $i . ", :test_name_" . $i . ", :name_" . $i . ", :weight_" . $i . ", :kind_" . $i . ")");
+					$subtestParams["project_id_" . $i] = $projectId;
+					$subtestParams["test_name_" . $i] = $test->getName();
+					$subtestParams["name_" . $i] = $subtest->getName();
+					$subtestParams["weight_" . $i] = $subtest->getWeight();
+					$subtestParams["kind_" . $i] = $subtest->getKind();
+					$i++;
+				}
+			}
+			$sth = $this->execute($testsQuery . implode(", ", $testEntries), $testParams);
+			$sth = $this->execute($subtestsQuery . implode(", ", $subtestEntries), $subtestParams);
 		}
 	}

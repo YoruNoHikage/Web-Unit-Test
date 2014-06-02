@@ -35,4 +35,17 @@
 			}
 			return $test;
 		}
+
+		public function getAllTestNames()
+		{
+			$sth = $this->execute("SELECT test.name FROM test");
+			$namesDb = $sth->fetchAll();
+
+			$namesArray = array();
+			foreach($namesDb as $nameDb)
+			{
+				array_push($namesArray, $nameDb["name"]);
+			}
+			return $namesArray;
+		}
 	}

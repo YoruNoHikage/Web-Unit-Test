@@ -7,6 +7,7 @@ require_once 'Entity/Project.php';
 
 require 'Model/UserModel.php';
 require 'Model/ProjectModel.php';
+require 'Model/TestModel.php';
 
 class Controller
 {
@@ -132,31 +133,44 @@ class Controller
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
 
-        //nous allons verifier tous les fichiers dans le rep tmp de l'utilisateur
-        $url = 'Projects/tmp/' . $user->getUsername();
-        $filenames = scandir($url);
-
-        $filesToProcess = array();
-        //pour chaque fichier à traiter
-        foreach($filenames as $filename)
-        {
-            $filenameExploded = explode('.', $filename);
-            $extension = end($filenameExploded);
-            //on verifie que l'extension est bien .java
-            if($extension == 'java')
-            {
-                $file = fopen($url . '/' . $filename, 'r');
-                $content = fread($file, filesize($url . '/' . $filename));
-                fclose($file);
-
-                preg_match_all('#@Test([\t\n\r\s])+public void (.*?)\(#', $content, $matches);
-                $testFuncs = $matches[2];
-                array_push($filesToProcess, array('class' => $filenameExploded[0], 'subtests' => $testFuncs));
-            }
-        }
 
         if($_SERVER['REQUEST_METHOD'] == 'POST') // first form was sent
         {
+            //nous allons verifier tous les fichiers dans le rep tmp de l'utilisateur
+            $url = 'Projects/tmp/' . $user->getUsername();
+            $filenames = scandir($url);
+
+            //pour eviter les doublons
+            $testModel = new TestModel();
+            $testNames = $testModel->getAllTestNames();
+
+            $filesToProcess = array();
+            //pour chaque fichier à traiter
+            foreach($filenames as $filename)
+            {
+                $filenameExploded = explode('.', $filename);
+                if(!in_array($filenameExploded[0], $testNames))
+                {
+                    $extension = end($filenameExploded);
+                    //on verifie que l'extension est bien .java
+                    if($extension == 'java')
+                    {
+                        $file = fopen($url . '/' . $filename, 'r');
+                        $content = fread($file, filesize($url . '/' . $filename));
+                        fclose($file);
+
+                        preg_match_all('#@Test([\t\n\r\s])+public void (.*?)\(#', $content, $matches);
+                        $testFuncs = $matches[2];
+                        array_push($filesToProcess, array('class' => $filenameExploded[0], 'subtests' => $testFuncs));
+                    }
+                }
+                else
+                {
+                    $this->setFlash("Nom de test déjà utilisé : " . $filenameExploded[0]);
+                }
+            }
+            $this->setSession("tests", serialize($filesToProcess));
+
             //on verif que les champs ont bien ete remplis
             if(isset($_POST['name']) && isset($_POST['due_date']))
             {
@@ -178,20 +192,6 @@ class Controller
         }
         else
             require 'Views/panel/newproject.php';
-    }
-    
-    // fired with the second new form
-    public function createProjectAction()
-    {
-        $user = $this->connectedOnly();
-        $this->teacherOnly($user);
-            
-        if($_SERVER['REQUEST_METHOD'] != 'POST')
-            header("Location: index.php?action=newproject");
-            
-        $this->setFlash('Le projet a bien été ajouté');
-        
-        header("Location: index.php?action=userpanel");        
     }
     
     public function projectAction()
@@ -240,6 +240,66 @@ class Controller
         }
         else
             require 'Views/panel/deleteproject.php';
+    }
+
+    public function addTestsAction()
+    {
+        $user = $this->connectedOnly();
+        $this->teacherOnly($user);
+
+        if(isset($_GET["id"]))
+        {
+            $projectId = $_GET["id"];
+            $tests = unserialize($this->getSession("tests"));
+            //$this->deleteSession("tests");
+            $testsArray = array();
+
+            //on recupere tous les noms de tests en base afin d'eviter les doublons
+            $testModel = new TestModel();
+            $testNames = $testModel->getAllTestNames();
+
+            foreach ($tests as $test)
+            {
+                //verification des doublons
+                if(!in_array($test["class"], $testNames))
+                {
+                    $newTest = new Test();
+                    $newTest->setName($test["class"]);
+                    $newTest->setFullname($test["class"] . ":" . $projectId);
+                    $newTest->setDescription("description");
+
+                    $subtests = $test['subtests'];
+                    foreach($subtests as $subtest)
+                    {
+                        $newSubtest = new Subtest();
+                        $newSubtest->setName($subtest);
+                        $fullname = $subtest . ":" . $test["class"] . ":" . $projectId;
+                        $newSubtest->setFullname($fullname);
+                        if(isset($_POST[$fullname]))
+                            $newSubtest->setWeight($_POST[$fullname]);
+                        $newSubtest->setKind("kind");
+                        $newTest->addSubtest($newSubtest);
+                    }
+                    array_push($testsArray, $newTest);
+                }
+                else
+                {
+                    $this->setFlashError("Nom de test déjà utilisé : " . $test["class"]);
+                    header("Location: index.php");
+                }
+            }
+
+            $projectModel = new ProjectModel();
+            $projectModel->addTests($projectId, $testsArray);
+
+            $this->setFlash("Les tests on bien été ajoutés !");
+            header("Location: index.php?action=userpanel");
+        }
+        else
+        {
+            $this->setFlashError('Pas de projet sélectionné !');
+            header("Location: index.php");
+        }
     }
     
     public function setFlashError($message)
