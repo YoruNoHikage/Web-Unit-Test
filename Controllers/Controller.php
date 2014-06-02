@@ -39,7 +39,7 @@ class Controller
         else
             return true;
     }
-    
+
     public function indexAction()
     {
         require 'Views/index.php';
@@ -54,7 +54,7 @@ class Controller
             $this->setFlashError('Vous êtes déjà connecté !');
             header("Location: index.php");
         }
-        
+
         $usermodel = new UserModel();
         $user = $usermodel->getOneUserBy($_POST['username']);
         if($user != null)
@@ -72,7 +72,7 @@ class Controller
     public function signOutAction()
     {
         session_destroy();
-        
+
         $this->setFlash('Vous avez bien été déconnecté.');
 
         header("Location: index.php");
@@ -99,17 +99,17 @@ class Controller
 
         require 'Views/panel/index.php';
     }
-    
+
     public function uploadSourcesAction()
     {
         $this->connectedOnly();
-            
+
         if($_SERVER['REQUEST_METHOD'] == 'POST')
         {
             $this->setFlash('Le projet a bien été envoyé !');
             header("Location: index.php?action=userpanel");
         }
-        
+
         require 'Views/panel/uploadsources.php';
     }
 
@@ -120,7 +120,7 @@ class Controller
 
         $uploadDir = 'Projects/tmp/' .$user->getUsername();
         if(!is_dir($uploadDir))
-            mkdir($uploadDir, 0777, true);
+            mkdir($uploadDir, 0755, true);
 
         $uploadFile = $uploadDir . '/' . basename($_FILES['file']['name']);
 
@@ -132,31 +132,31 @@ class Controller
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
 
-        //nous allons verifier tous les fichiers dans le rep tmp de l'utilisateur
-        $url = 'Projects/tmp/' . $user->getUsername();
-        $filenames = scandir($url);
-
-        $filesToProcess = array();
-        //pour chaque fichier à traiter
-        foreach($filenames as $filename)
-        {
-            $filenameExploded = explode('.', $filename);
-            $extension = end($filenameExploded);
-            //on verifie que l'extension est bien .java
-            if($extension == 'java')
-            {
-                $file = fopen($url . '/' . $filename, 'r');
-                $content = fread($file, filesize($url . '/' . $filename));
-                fclose($file);
-
-                preg_match_all('#@Test([\t\n\r\s])+public void (.*?)\(#', $content, $matches);
-                $testFuncs = $matches[2];
-                array_push($filesToProcess, array('class' => $filenameExploded[0], 'subtests' => $testFuncs));
-            }
-        }
-
         if($_SERVER['REQUEST_METHOD'] == 'POST') // first form was sent
         {
+            //nous allons verifier tous les fichiers dans le rep tmp de l'utilisateur
+            $url = 'Projects/tmp/' . $user->getUsername();
+            $filenames = scandir($url);
+
+            $filesToProcess = array();
+            //pour chaque fichier à traiter
+            foreach($filenames as $filename)
+            {
+                $filenameExploded = explode('.', $filename);
+                $extension = end($filenameExploded);
+                //on verifie que l'extension est bien .java
+                if($extension == 'java')
+                {
+                    $file = fopen($url . '/' . $filename, 'r');
+                    $content = fread($file, filesize($url . '/' . $filename));
+                    fclose($file);
+
+                    preg_match_all('#@Test([\t\n\r\s])+public void (.*?)\(#', $content, $matches);
+                    $testFuncs = $matches[2];
+                    array_push($filesToProcess, array('class' => $filenameExploded[0], 'subtests' => $testFuncs));
+                }
+            }
+
             //on verif que les champs ont bien ete remplis
             if(isset($_POST['name']) && isset($_POST['due_date']))
             {
@@ -179,21 +179,21 @@ class Controller
         else
             require 'Views/panel/newproject.php';
     }
-    
+
     // fired with the second new form
     public function createProjectAction()
     {
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
-            
+
         if($_SERVER['REQUEST_METHOD'] != 'POST')
             header("Location: index.php?action=newproject");
-            
+
         $this->setFlash('Le projet a bien été ajouté');
-        
+
         header("Location: index.php?action=userpanel");        
     }
-    
+
     public function projectAction()
     {
         $user = $this->connectedOnly();
@@ -209,7 +209,7 @@ class Controller
 
         $projectModel = new ProjectModel();
         $project = $projectModel->getOneProjectBy($projectId);
-        
+
         $projectTotalWeight = $projectModel->getProjectTotalWeight($project);
 
         $project = $projectModel->getProjectTests($project);
@@ -218,20 +218,20 @@ class Controller
 
         require 'Views/panel/project.php';
     }
-    
+
     public function editProjectAction()
     {
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
-            
+
         require 'Views/panel/editproject.php';
     }
-    
+
     public function deleteProjectAction()
     {
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
-            
+
         if($_SERVER['REQUEST_METHOD'] == 'POST') // if we confirm the deletion
         {
             // delete action
@@ -241,32 +241,32 @@ class Controller
         else
             require 'Views/panel/deleteproject.php';
     }
-    
+
     public function setFlashError($message)
     {
         $this->setFlash($message, 'danger');
     }
-    
+
     public function setFlash($message, $type = 'success')
     {
         $this->setSession('flashType', $type);
         $this->setSession('flash', $message);
         $this->setSession('flashToDelete', false);
     }
-    
+
     public function getSession($name)
     {
         if(!isset($_SESSION[$name]))
             return false;
-        
+
         return $_SESSION[$name];
     }
-    
+
     public function setSession($name, $value)
     {
         $_SESSION[$name] = $value;
     }
-    
+
     public function deleteSession($name)
     {
         unset($_SESSION[$name]);
