@@ -214,7 +214,7 @@ class Controller
 
         $project = $projectModel->getProjectTests($project);
 
-        $participants = $projectModel->getProjectParticipants($project);
+        $users = $projectModel->getProjectParticipants($project);
 
         require 'Views/panel/project.php';
     }
@@ -240,6 +240,28 @@ class Controller
         }
         else
             require 'Views/panel/deleteproject.php';
+    }
+    
+    public function resultsAction()
+    {
+        $user = $this->connectedOnly();
+        $this->teacherOnly($user);
+        
+        if(isset($_GET['projectid']) && isset($_GET['username']))
+        {
+            $projectId = $_GET['projectid'];
+            $username = $_GET['username'];
+        }
+        else
+        {
+            $this->setFlashError('Mauvais paramètres !');
+            header("Location: index.php");
+        }
+        
+        $userModel = new userModel();
+        $pupil = $userModel->getUserWithProjectResults($username, $projectId);
+        
+        require 'Views/panel/results.php';
     }
 
     public function setFlashError($message)

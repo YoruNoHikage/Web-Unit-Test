@@ -115,5 +115,48 @@
 				$user->addResult($result, $subtest);
 			}
 			return $user;
-		}	
+		}
+		
+		public function getUserWithProjectResults($userId, $projectId){
+			$sth = $this->execute("SELECT * FROM users AS u 
+				                    NATURAL JOIN users_test AS ut 
+				                    NATURAL JOIN subtest AS st 
+				                    WHERE u.username = :username 
+				                        AND ut.project_id = :projectid
+				                        AND ut.test_name = st.test_name
+				                        AND ut.subtest_name=st.name
+				                        AND ut.project_id = st.project_id;",
+				                    array("username" => $userId,
+				                          "projectid" => $projectId));
+
+			$resultsDb = $sth->fetchAll();
+			
+			$user = new User();
+            $user->setUsername($resultsDb[0]['username']);
+            $user->setFirstname($resultsDb[0]['firstname']);
+            $user->setLastname($resultsDb[0]['lastname']);
+            $user->setMail($resultsDb[0]['mail']);
+            $user->setRole($resultsDb[0]['role']);
+			
+			foreach($resultsDb as $resultDb)
+            {
+				$result = new Result();
+				$result->setStatus($resultDb["status"]);
+				$result->setError($resultDb["errors"]);
+
+				//full subtest name ?
+				$subtest = new Subtest();
+				$subtest->setName($resultDb["name"]);
+				$subtest->setFullname($resultDb["name"] . ":" . $resultDb["test_name"] . ":" . $resultDb["project_id"]);
+				$subtest->setWeight($resultDb["weight"]);
+				$subtest->setKind($resultDb["kind"]);
+				
+				$test = new Test();
+				$test->setName($resultDb["test_name"]);
+				$subtest->setTest($test);
+
+				$user->addResult($result, $subtest);
+			}
+			return $user;
+		}
 	}
