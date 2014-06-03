@@ -9,9 +9,14 @@
         </div>
 
         <div class="form-group">
-            <label for="password" class="col-sm-3 control-label">Date</label>
+            <label for="duedate" class="col-sm-3 control-label">Date</label>
             <div class="col-sm-9">
-                <input type="datetime" class="form-control" id="date" name="due_date" placeholder="AAAA-MM-JJ HH:mm" required>
+                <div class='input-group date'>
+                    <input type='text' class="form-control" id="duedate" name="duedate" required />
+                    <span class="input-group-addon">
+                        <span class="glyphicon glyphicon-calendar"></span>
+                    </span>
+                </div>
             </div>
         </div>
 
@@ -21,7 +26,7 @@
                 <?php require_once 'formuploadarea.php' ?>
 
                 <div id="upload-panelzone">
-                    <!--<div class="col-sm-4"> <!-- exemple 
+                    <!--<div class="col-sm-4"> exemple 
                         <div class="panel panel-default">
                             <button type="button" class="close">&times;</button>
                             <div class="panel-heading">Test 3</div>
