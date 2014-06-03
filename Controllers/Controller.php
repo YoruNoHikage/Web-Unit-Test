@@ -128,6 +128,30 @@ class Controller
         move_uploaded_file($_FILES['file']['tmp_name'], $uploadFile);
     }
 
+    public function deleteUploadedFileAction()
+    {
+        $user = $this->connectedOnly();
+        $this->teacherOnly($user);
+
+        $file = fopen('pwet.txt', 'a+');
+        fwrite($file, $_POST['class'] . $_POST['status']);
+        fclose($file);
+        
+        if(isset($_POST['class']) && isset($_POST['status']))
+        {
+            if($_POST['status'] == 'new' && isset($_POST['projectId']))
+            {
+                /*if(file_exists('Projects/' . $_POST['projectId'] . '/' . $_POST['class']))
+                    unlink('Projects/' . $_POST['projectId'] . '/' . $_POST['class']);*/
+            }
+            else if($_POST['status'] == 'old')
+            {
+                if(file_exists('Projects/tmp/' . $user->getUsername() . '/' . $_POST['class'] . '.java'))
+                    unlink('Projects/tmp/' . $user->getUsername() . '/' . $_POST['class'] . '.java');
+            }
+        }
+    }
+
     public function newProjectAction()
     {
         $user = $this->connectedOnly();
@@ -174,7 +198,7 @@ class Controller
             //on verif que les champs ont bien ete remplis
             if(isset($_POST['name']) && isset($_POST['duedate']))
             {
-                $duedate = DateTime::createFromFormat("d/m/Y H:i", $_POST['duedate']);
+                $duedate = DateTime::createFromFormat('d/m/Y H:i', $_POST['duedate']);
                 var_dump($duedate);
                 
                 $projectModel = new ProjectModel(); 
