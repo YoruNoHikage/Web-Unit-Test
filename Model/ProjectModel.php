@@ -133,6 +133,19 @@
 			return $project;
 		}
 
+		public function getAllTestNames($projectId)
+		{
+			$sth = $this->execute("SELECT test.name FROM test WHERE test.project_id = :project_id", array("project_id", $projectId));
+			$namesDb = $sth->fetchAll();
+
+			$namesArray = array();
+			foreach($namesDb as $nameDb)
+			{
+				array_push($namesArray, $nameDb["name"]);
+			}
+			return $namesArray;
+		}
+
 		public function getProjectTotalWeight($project)
 		{
 			$sth = $this->execute("SELECT subtest.weight FROM subtest WHERE subtest.project_id = :projectId", 

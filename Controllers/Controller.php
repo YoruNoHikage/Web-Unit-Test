@@ -132,10 +132,6 @@ class Controller
     {
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
-
-        $file = fopen('pwet.txt', 'a+');
-        fwrite($file, $_POST['class'] . $_POST['status']);
-        fclose($file);
         
         if(isset($_POST['class']) && isset($_POST['status']))
         {
@@ -163,34 +159,23 @@ class Controller
             $url = 'Projects/tmp/' . $user->getUsername();
             $filenames = scandir($url);
 
-            //pour eviter les doublons
-            $testModel = new TestModel();
-            $testNames = $testModel->getAllTestNames();
-
             $filesToProcess = array();
             //pour chaque fichier à traiter
             foreach($filenames as $filename)
             {
                 $filenameExploded = explode('.', $filename);
 
-                if(!in_array($filenameExploded[0], $testNames))
+                $extension = end($filenameExploded);
+                //on verifie que l'extension est bien .java
+                if($extension == 'java')
                 {
-                    $extension = end($filenameExploded);
-                    //on verifie que l'extension est bien .java
-                    if($extension == 'java')
-                    {
-                        $file = fopen($url . '/' . $filename, 'r');
-                        $content = fread($file, filesize($url . '/' . $filename));
-                        fclose($file);
-
-                        preg_match_all('#@Test([\t\n\r\s])+public void (.*?)\(#', $content, $matches);
-                        $testFuncs = $matches[2];
-                        array_push($filesToProcess, array('class' => $filenameExploded[0], 'subtests' => $testFuncs));
-                    }
-                }
-                else
-                {
-                    $this->setFlash("Nom de test déjà utilisé : " . $filenameExploded[0]);
+                    $file = fopen($url . '/' . $filename, 'r');
+                    $content = fread($file, filesize($url . '/' . $filename));
+                    fclose($file);
+                    
+                    preg_match_all('#@Test([\t\n\r\s])+public void (.*?)\(#', $content, $matches);
+                    $testFuncs = $matches[2];
+                    array_push($filesToProcess, array('class' => $filenameExploded[0], 'subtests' => $testFuncs));
                 }
             }
             $this->setSession("tests", serialize($filesToProcess));
@@ -251,6 +236,24 @@ class Controller
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
 
+        if(isset($_GET['id']))
+        {
+            $projectModel = new ProjectModel();
+            $project = $projectModel->getOneProjectBy($_GET['id']);
+            //gerer si id defaillant ?
+            $project = $projectModel->getProjectTests($project);
+            $testModel = new TestModel();
+            foreach($project->getTests() as $test)
+            {
+                $test = $testModel->getTestSubtests($test);
+            }
+        }
+        else
+        {
+            $this->setFlash('Pas de projet sélectionné');
+                header("Location: index.php");
+        }
+
         require 'Views/panel/editproject.php';
     }
 
@@ -295,8 +298,8 @@ class Controller
             $testsArray = array();
 
             //on recupere tous les noms de tests en base afin d'eviter les doublons
-            $testModel = new TestModel();
-            $testNames = $testModel->getAllTestNames();
+            $projectModel = new ProjectModel();
+            $testNames = $projectModel->getAllTestNames($projectId);
 
             foreach ($tests as $test)
             {

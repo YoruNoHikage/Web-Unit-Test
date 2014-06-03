@@ -1,10 +1,18 @@
 <div class="col-md-8 col-md-push-2">
 
-    <form class="form-horizontal" action="index.php?action=newproject" method="post" role="form">
+    <?php
+        if($_GET['action'] == 'editproject')
+            
+    ?>
+
+    <form class="form-horizontal" action="index.php?action=<?php echo $_GET['action'] ;?>" method="post" role="form">
         <div class="form-group">
             <label for="name" class="col-sm-3 control-label">Nom du projet</label>
             <div class="col-sm-9">
-                <input type="text" class="form-control" id="name" name="name" placeholder="Nom du projet" required>
+                <input type="text" class="form-control" id="name" name="name" placeholder="Nom du projet" value="<?php
+                    if($_GET['action'] == 'editproject')
+                        echo $project->getName();
+                ?>" required>
             </div>
         </div>
 
@@ -12,7 +20,10 @@
             <label for="duedate" class="col-sm-3 control-label">Date</label>
             <div class="col-sm-9">
                 <div class='input-group date'>
-                    <input type='text' class="form-control" id="duedate" name="duedate" required />
+                    <input type='text' class="form-control" id="duedate" name="duedate" value="<?php
+                        if($_GET['action'] == 'editproject')
+                        echo $project->getDue_date()->format("d/m/Y H:i");
+                    ?>" required />
                     <span class="input-group-addon">
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
