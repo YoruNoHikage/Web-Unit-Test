@@ -83,7 +83,7 @@
 				$project->setId($projectDb["id"]);
 				$project->setName($projectDb["name"]);
 				$project->setEnabled($projectDb["enabled"]);
-				$project->setDue_date($projectDb["due_date"]);
+				$project->setDue_date(DateTime::createFromFormat("Y-m-d H:i:s", $projectDb["due_date"]));
 				$user->addProject($project);
 			}
 			return $user;
