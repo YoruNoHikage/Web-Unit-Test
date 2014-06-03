@@ -7,7 +7,9 @@
         <title>Mon super site</title>
         
         <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+        <!-- TO DO : conditions -->
         <link rel="stylesheet" href="Views/styles/upload.css">
+        <link rel="stylesheet" href="Views/styles/bootstrap-datetimepicker.min.css">
         <style>
             header .row {
                 display: table;

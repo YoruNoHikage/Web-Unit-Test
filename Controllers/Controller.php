@@ -172,13 +172,16 @@ class Controller
             $this->setSession("tests", serialize($filesToProcess));
 
             //on verif que les champs ont bien ete remplis
-            if(isset($_POST['name']) && isset($_POST['due_date']))
+            if(isset($_POST['name']) && isset($_POST['duedate']))
             {
+                $duedate = DateTime::createFromFormat("d/m/Y H:i", $_POST['duedate']);
+                var_dump($duedate);
+                
                 $projectModel = new ProjectModel(); 
                 $project = new Project();
                 $project->setName($_POST['name']);
                 $project->setEnabled(1);
-                $project->setDue_date($_POST['due_date']);
+                $project->setDue_date($duedate);
                 $project->setOwner($user);
                 $projectModel->newProject($project);
             }
