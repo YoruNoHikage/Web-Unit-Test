@@ -40,7 +40,7 @@ class Controller
         else
             return true;
     }
-    
+
     public function indexAction()
     {
         require 'Views/index.php';
@@ -55,7 +55,7 @@ class Controller
             $this->setFlashError('Vous êtes déjà connecté !');
             header("Location: index.php");
         }
-        
+
         $usermodel = new UserModel();
         $user = $usermodel->getOneUserBy($_POST['username']);
         if($user != null)
@@ -73,7 +73,7 @@ class Controller
     public function signOutAction()
     {
         session_destroy();
-        
+
         $this->setFlash('Vous avez bien été déconnecté.');
 
         header("Location: index.php");
@@ -100,17 +100,17 @@ class Controller
 
         require 'Views/panel/index.php';
     }
-    
+
     public function uploadSourcesAction()
     {
         $this->connectedOnly();
-            
+
         if($_SERVER['REQUEST_METHOD'] == 'POST')
         {
             $this->setFlash('Le projet a bien été envoyé !');
             header("Location: index.php?action=userpanel");
         }
-        
+
         require 'Views/panel/uploadsources.php';
     }
 
@@ -121,7 +121,7 @@ class Controller
 
         $uploadDir = 'Projects/tmp/' .$user->getUsername();
         if(!is_dir($uploadDir))
-            mkdir($uploadDir, 0777, true);
+            mkdir($uploadDir, 0755, true);
 
         $uploadFile = $uploadDir . '/' . basename($_FILES['file']['name']);
 
@@ -132,7 +132,6 @@ class Controller
     {
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
-
 
         if($_SERVER['REQUEST_METHOD'] == 'POST') // first form was sent
         {
@@ -149,6 +148,7 @@ class Controller
             foreach($filenames as $filename)
             {
                 $filenameExploded = explode('.', $filename);
+
                 if(!in_array($filenameExploded[0], $testNames))
                 {
                     $extension = end($filenameExploded);
@@ -193,7 +193,7 @@ class Controller
         else
             require 'Views/panel/newproject.php';
     }
-    
+
     public function projectAction()
     {
         $user = $this->connectedOnly();
@@ -209,32 +209,45 @@ class Controller
 
         $projectModel = new ProjectModel();
         $project = $projectModel->getOneProjectBy($projectId);
-        
+
         $projectTotalWeight = $projectModel->getProjectTotalWeight($project);
 
         $project = $projectModel->getProjectTests($project);
 
-        $participants = $projectModel->getProjectParticipants($project);
+        $users = $projectModel->getProjectParticipants($project);
 
         require 'Views/panel/project.php';
     }
-    
+
     public function editProjectAction()
     {
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
-            
+
         require 'Views/panel/editproject.php';
     }
-    
+
     public function deleteProjectAction()
     {
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
-            
+
         if($_SERVER['REQUEST_METHOD'] == 'POST') // if we confirm the deletion
         {
-            // delete action
+            if(isset($_POST["id"]))
+                $projectId = $_POST["id"];
+            else
+            {
+                $this->setFlash('Pas de projet sélectionné');
+                header("Location: index.php");
+            }
+
+            $projectModel = new ProjectModel();
+            $projectModel->deleteProject($projectId);
+
+            if(is_dir("Projects/" . $projectId))
+                self::delTree("Projects/" . $projectId);
+
             $this->setFlash('Le projet a bien été supprimé !');
             header("Location: index.php?action=userpanel");
         }
@@ -251,7 +264,7 @@ class Controller
         {
             $projectId = $_GET["id"];
             $tests = unserialize($this->getSession("tests"));
-            //$this->deleteSession("tests");
+            $this->deleteSession("tests");
             $testsArray = array();
 
             //on recupere tous les noms de tests en base afin d'eviter les doublons
@@ -281,18 +294,31 @@ class Controller
                         $newTest->addSubtest($newSubtest);
                     }
                     array_push($testsArray, $newTest);
+
+                    //on copie maintenant la classe de test dans le repertoire du projet
+                    $projectDir = "Projects/". $projectId;
+                    if(!is_dir($projectDir))
+                        mkdir($projectDir, 0755, true);
+                    copy("Projects/tmp/" . $user->getUsername(). "/" . $test["class"] . ".java", $projectDir . "/" . $test["class"] . ".java");
                 }
                 else
                 {
                     $this->setFlashError("Nom de test déjà utilisé : " . $test["class"]);
                     header("Location: index.php");
                 }
+                //on supprime le fichiers de tmp
+                unlink("Projects/tmp/" . $user->getUsername() . "/" . $test["class"] . ".java");
             }
+            //si on a bien des tests à rajouter
+            if(count($testsArray))
+            {
+                $projectModel = new ProjectModel();
+                $projectModel->addTests($projectId, $testsArray);
+                $this->setFlash("Les tests on bien été ajoutés !");
+            }
+            else
+                $this->setFlash("Aucun test ajouté !");
 
-            $projectModel = new ProjectModel();
-            $projectModel->addTests($projectId, $testsArray);
-
-            $this->setFlash("Les tests on bien été ajoutés !");
             header("Location: index.php?action=userpanel");
         }
         else
@@ -302,33 +328,64 @@ class Controller
         }
     }
     
+    public function resultsAction()
+    {
+        $user = $this->connectedOnly();
+        $this->teacherOnly($user);
+        
+        if(isset($_GET['projectid']) && isset($_GET['username']))
+        {
+            $projectId = $_GET['projectid'];
+            $username = $_GET['username'];
+        }
+        else
+        {
+            $this->setFlashError('Mauvais paramètres !');
+            header("Location: index.php");
+        }
+        
+        $userModel = new userModel();
+        $pupil = $userModel->getUserWithProjectResults($username, $projectId);
+        
+        require 'Views/panel/results.php';
+    }
+
     public function setFlashError($message)
     {
         $this->setFlash($message, 'danger');
     }
-    
+
     public function setFlash($message, $type = 'success')
     {
         $this->setSession('flashType', $type);
         $this->setSession('flash', $message);
         $this->setSession('flashToDelete', false);
     }
-    
+
     public function getSession($name)
     {
         if(!isset($_SESSION[$name]))
             return false;
-        
+
         return $_SESSION[$name];
     }
-    
+
     public function setSession($name, $value)
     {
         $_SESSION[$name] = $value;
     }
-    
+
     public function deleteSession($name)
     {
         unset($_SESSION[$name]);
     }
+
+    public static function delTree($dir)
+    {
+        $files = array_diff(scandir($dir), array('.','..'));
+        foreach ($files as $file) {
+          (is_dir("$dir/$file")) ? self::delTree("$dir/$file") : unlink("$dir/$file");
+        }
+        return rmdir($dir);
+    } 
 }

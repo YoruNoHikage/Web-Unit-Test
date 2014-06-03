@@ -197,4 +197,14 @@
 			$sth = $this->execute($testsQuery . implode(", ", $testEntries), $testParams);
 			$sth = $this->execute($subtestsQuery . implode(", ", $subtestEntries), $subtestParams);
 		}
+
+		public function deleteProject($projectId)
+		{
+			echo $projectId;
+			$param["projectId"] = $projectId;
+			$sth = $this->execute("DELETE FROM users_test WHERE users_test.project_id = :projectId;", $param);
+			$sth = $this->execute("DELETE FROM subtest WHERE subtest.project_id = :projectId;", $param);
+			$sth = $this->execute("DELETE FROM test WHERE test.project_id = :projectId;", $param);
+			$sth = $this->execute("DELETE FROM project WHERE project.id = :projectId;", $param);
+		}
 	}

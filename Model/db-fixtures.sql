@@ -82,6 +82,14 @@ INSERT INTO `users_groups` (`group_name`, `username`) VALUES
 ('cir1', 'yoyolabricot'),
 ('cir2', 'yoyolabricot');
 
+--
+-- Contenu de la table `users_test`
+--
+
+INSERT INTO `projet_web`.`users_test` (`project_id`, `test_name`, `subtest_name`, `username`, `status`, `errors`) VALUES 
+('1', 'testDroite', 'droitedroite', 'pizza', '1', NULL), 
+('1', 'testDroite', 'droitegauche', 'pizza', '0', 'Erreur pizza, trop de pepperonis !');
+
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
