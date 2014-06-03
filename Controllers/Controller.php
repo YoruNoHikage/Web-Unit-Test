@@ -317,7 +317,7 @@ class Controller
             {
                 $projectModel = new ProjectModel();
                 $projectModel->addTests($projectId, $testsArray);
-                $this->setFlash("Les tests on bien été ajoutés !");
+                $this->setFlash("Les tests ont bien été ajoutés !");
             }
             else
                 $this->setFlash("Aucun test ajouté !");
