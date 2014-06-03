@@ -14,7 +14,7 @@
 				$project->setId($projectDb["id"]);
 				$project->setName($projectDb["name"]);
 				$project->setEnabled($projectDb["enabled"]);
-				$project->setDue_date($projectDb["due_date"]);
+				$project->setDue_date(DateTime::createFromFormat("Y-m-d H:i:s", $projectDb["due_date"]));
 				array_push($projectArray, $project);
 			}
 			return $projectArray;
@@ -29,7 +29,7 @@
 			$project->setId($req["id"]);
 			$project->setName($req["name"]);
 			$project->setEnabled($req["enabled"]);
-			$project->setDue_date($req["due_date"]);
+			$project->setDue_date(DateTime::createFromFormat("Y-m-d H:i:s", $req["due_date"]));
 
 			return $project;			
 		}
@@ -46,7 +46,7 @@
 				$project->setId($projectDb["id"]);
 				$project->setName($projectDb["name"]);
 				$project->setEnabled($projectDb["enabled"]);
-				$project->setDue_date($projectDb["due_date"]);
+				$project->setDue_date(DateTime::createFromFormat("Y-m-d H:i:s", $projectDb["due_date"]));
 				array_push($projectArray, $project);
 			}
 			return $projectArray;
@@ -151,11 +151,11 @@
 		public function newProject($project)
 		{
 			//envoi du projet
-			$sth = $this->execute("INSERT INTO project (username, name, enabled, due_date) VALUES (:username, :projectName, :enabled, NOW())", array(
+			$sth = $this->execute("INSERT INTO project (username, name, enabled, due_date) VALUES (:username, :projectName, :enabled, :due_date)", array(
 				"username" => $project->getOwner()->getUsername(),
 				"projectName" => $project->getName(),
-				"enabled" => $project->getEnabled()
-				/*"due_date" => $project->getDue_date()*/
+				"enabled" => $project->getEnabled(),
+				"due_date" => $project->getDue_date()->format("Y-m-d H:i:s")
 			));
 			//on recupere son id
 			$sth = $this->execute("SELECT LAST_INSERT_ID() as lastInsertId");
