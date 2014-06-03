@@ -59,7 +59,7 @@ window.onload = function () {
             xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
             xhr.setRequestHeader("Content-length", params.length);
             xhr.setRequestHeader("Connection", "close");
-
+            
             xhr.send(params);
         });
 
