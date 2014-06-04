@@ -135,16 +135,31 @@ class Controller
         
         if(isset($_POST['class']) && isset($_POST['status']))
         {
-            if($_POST['status'] == 'new' && isset($_POST['projectId']))
+            if($_POST['status'] == 'old' && isset($_POST['projectid']))
             {
-                /*if(file_exists('Projects/' . $_POST['projectId'] . '/' . $_POST['class']))
-                    unlink('Projects/' . $_POST['projectId'] . '/' . $_POST['class']);*/
+                $fileToDelete = 'Projects/' . $_POST['projectid'] . '/' . $_POST['class'];
+                if(file_exists($fileToDelete)) {
+                    unlink($fileToDelete);
+                    header($_SERVER["SERVER_PROTOCOL"]." 200 OK");
+                }
+                else {
+                    header($_SERVER["SERVER_PROTOCOL"]." 404 File " . $fileToDelete . " Not Found");
+                }
             }
-            else if($_POST['status'] == 'old')
+            else if($_POST['status'] == 'new')
             {
-                if(file_exists('Projects/tmp/' . $user->getUsername() . '/' . $_POST['class'] . '.java'))
-                    unlink('Projects/tmp/' . $user->getUsername() . '/' . $_POST['class'] . '.java');
+                $fileToDelete = 'Projects/tmp/' . $user->getUsername() . '/' . $_POST['class'] . '.java';
+                if(file_exists($fileToDelete))
+                    unlink($fileToDelete);
             }
+            else
+            {
+                header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
+            }
+        }
+        else
+        {
+            header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
         }
     }
 
@@ -184,7 +199,6 @@ class Controller
             if(isset($_POST['name']) && isset($_POST['duedate']))
             {
                 $duedate = DateTime::createFromFormat('d/m/Y H:i', $_POST['duedate']);
-                var_dump($duedate);
                 
                 $projectModel = new ProjectModel(); 
                 $project = new Project();
@@ -251,7 +265,7 @@ class Controller
         else
         {
             $this->setFlash('Pas de projet sélectionné');
-                header("Location: index.php");
+            header("Location: index.php");
         }
 
         require 'Views/panel/editproject.php';

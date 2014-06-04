@@ -1,4 +1,4 @@
-/*global FileReader, FormData */
+/*global FileReader, FormData, $ */
 /*jslint vars: true, plusplus: true, devel: true, regexp: true, nomen: true, indent: 4, maxerr: 50 */
 
 window.onload = function () {
@@ -30,14 +30,33 @@ window.onload = function () {
             support[api].className = 'hidden';
         }
     });
-    
-    function createPanel(name, status) {
-        var panelzone = document.getElementById('upload-panelzone');
+
+    function bindDeleteOnClick(filename, status, projectId) {
+        var xhr = new XMLHttpRequest();
+        var url = "index.php?action=deleteuploadedfile";
+
+        var params = 'class=' + filename + '&status=' + status;
+        if (projectId !== 'undefined') {
+            params += '&projectid=' + projectId;
+        }
+
+        xhr.open("POST", url, true);
+        //Send the proper header information along with the request
+        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhr.setRequestHeader("Content-length", params.length);
+        xhr.setRequestHeader("Connection", "close");
+
+        xhr.send(params);
+    }
+
+    function createPanel(filename, status) {
+        var panelzone = document.getElementById('upload-panelzone'),
+            name = filename.split('.')[0];
         if (!panelzone) {
             return false;
         }
 
-        var char = '<div class="panel panel-default" data-dismiss="alert"><button type="button" class="close" id="' + name.split('.')[0] + '">&times;</button><div class="panel-heading">' + name + '</div><div class="panel-body"><div class="progress"><div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"><span class="sr-only">0%</span></div></div></div></div>';
+        var char = '<div class="panel panel-default" data-dismiss="alert"><button type="button" class="close" id="' + name + '">&times;</button><div class="panel-heading">' + filename + '</div><div class="panel-body"><div class="progress"><div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"><span class="sr-only">0%</span></div></div></div></div>';
 
         var element = document.createElement("div");
         element.className = "col-md-4";
@@ -45,23 +64,7 @@ window.onload = function () {
 
         panelzone.appendChild(element);
 
-        $('#' + name.split('.')[0]).bind('click', function () {
-            var xhr = new XMLHttpRequest();
-            var url = "index.php?action=deleteuploadedfile";
-            
-            if(status == 'new')
-                var params = 'class=' + name.split('.')[0] + '&status=' + status;
-            else(status == 'old')
-                var params = 'class=' + name.split('.')[0] + '&status=' + status;
-
-            xhr.open("POST", url, true);
-            //Send the proper header information along with the request
-            xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-            xhr.setRequestHeader("Content-length", params.length);
-            xhr.setRequestHeader("Connection", "close");
-            
-            xhr.send(params);
-        });
+        $('#' + name).bind('click', function () { bindDeleteOnClick(filename, status); });
 
         return element;
     }
@@ -73,14 +76,14 @@ window.onload = function () {
             filename;
 
         formData.append('file', file);
-        
+
         filename = file.name.length > 20 ? file.name.substring(0, 15) + '...' : file.name;
-        element = createPanel(filename,  'old');
+        element = createPanel(filename,  'new');
         if (element === false) { // if the element is false, we only have to upload a single file
             element = document.getElementById('upload-uniquefile');
             element.getElementsByClassName('panel-heading')[0].innerHTML = filename;
         }
-        
+
         progressBar = element.getElementsByClassName('progress-bar')[0];
 
         var xhr = new XMLHttpRequest();
@@ -125,5 +128,21 @@ window.onload = function () {
         fileupload.querySelector('input').onchange = function () {
             readFiles(this.files);
         };
+    }
+
+    // If there is existing files, we add the delete action
+    var panelzone = document.getElementById('upload-panelzone');
+
+    if (panelzone) {
+        var childs = panelzone.childNodes,
+            projectId = document.getElementById("projectid").getAttribute("value"),
+            i;
+
+        for (i = 1; i < childs.length - 1; i++) {
+            var child = $(childs[i]).children('.close');
+            if (child) {
+                child.bind('click', function () { return bindDeleteOnClick($(this).attr('id') + '.java', 'old', projectId); });
+            }
+        }
     }
 };

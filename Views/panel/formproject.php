@@ -37,22 +37,38 @@
                 <?php require_once 'formuploadarea.php' ?>
 
                 <div id="upload-panelzone">
-                    <!--<div class="col-sm-4"> exemple 
-                        <div class="panel panel-default">
-                            <button type="button" class="close">&times;</button>
-                            <div class="panel-heading">Test 3</div>
-                            <div class="panel-body">
-                                <div class="progress">
-                                    <div class="progress-bar" role="progressbar" 
-                                         aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" 
-                                         style="width: 60%;">
-                                        <span class="sr-only">60%</span>
-                                    </div>
+                <?php 
+                    if(isset($project))
+                    {
+                        foreach($project->getTests() as $test)
+                        {
+                ?>
+                <div class="col-sm-4">
+                    <button type="button" class="close" data-dismiss="alert" 
+                            id="<?php echo $test->getName(); ?>">&times;</button>
+                    <div class="panel panel-default">
+                        <div class="panel-heading"><?php echo $test->getName(); ?></div>
+                        <div class="panel-body">
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" 
+                                     aria-valuenow="100" 
+                                     aria-valuemin="0" 
+                                     aria-valuemax="100" style="width: 100%;">
+                                    <span class="sr-only">100%</span>
                                 </div>
                             </div>
                         </div>
-                    </div>-->
+                    </div>
                 </div>
+                <?php
+                        }
+                ?>
+                    <input type="hidden" id="projectid" name="projectid" value="<?php echo $project->getId(); ?>">
+                <?php
+                    }
+                ?>
+                </div>
+                
                 <div class="clearfix"></div>
             </div>
         </div>
