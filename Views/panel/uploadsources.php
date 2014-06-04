@@ -4,6 +4,7 @@
     <h2>Envoyer un projet</h2>
      
     <form class="form-horizontal" action="index.php?action=uploadsources" method="post" role="form">
+        <input type="hidden" name="projectId" value="<?php echo $projectId; ?>"/>
         <div class="form-group">
             <div class="jumbotron">
                 

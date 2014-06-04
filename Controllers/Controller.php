@@ -103,15 +103,48 @@ class Controller
 
     public function uploadSourcesAction()
     {
-        $this->connectedOnly();
+        $user = $this->connectedOnly();
 
         if($_SERVER['REQUEST_METHOD'] == 'POST')
         {
-            $this->setFlash('Le projet a bien été envoyé !');
-            header("Location: index.php?action=userpanel");
-        }
+            $url = 'Projects/tmp/' . $user->getUsername();
+            $files = scandir($url);
+            $zip = new ZipArchive;
 
-        require 'Views/panel/uploadsources.php';
+            foreach($files as $file)
+            {
+                if(end(explode('.', $file)) == 'zip')
+                {
+                    $res = $zip->open($url . '/' . $file);
+                    if ($res === true && isset($_POST['projectId']))
+                    {
+                        $projectDir = "Projects/". $_POST['projectId'] . '/src/' . $user->getUsername();
+                        if(is_dir($projectDir))
+                            self::delTree($projectDir);
+                        mkdir($projectDir, 0755, true);
+                        $zip->extractTo($projectDir);
+                        $zip->close();
+                        $this->setFlash('Projet uploadé');
+                    } else {
+                        $this->setFlash('Projet non uploadé');
+                    }
+                    header("Location: index.php?action=userpanel");
+                }
+            }
+        }
+        else
+        {
+            if(is_dir('Projects/tmp/' . $user->getUsername()))
+                self::delTree('Projects/tmp/' . $user->getUsername());
+            if(isset($_GET['id']))
+                $projectId = $_GET['id'];
+            else
+            {
+                $this->setFlash('Pas de projet sélectionné');
+                header("Location: index.php");
+            }
+            require 'Views/panel/uploadsources.php';
+        }
     }
 
     public function uploadTmpAction()
@@ -184,7 +217,6 @@ class Controller
             if(isset($_POST['name']) && isset($_POST['duedate']))
             {
                 $duedate = DateTime::createFromFormat('d/m/Y H:i', $_POST['duedate']);
-                var_dump($duedate);
                 
                 $projectModel = new ProjectModel(); 
                 $project = new Project();
@@ -203,7 +235,11 @@ class Controller
             require 'Views/panel/newproject.php';
         }
         else
+        {
+            if(is_dir('Projects/tmp/' . $user->getUsername()))
+                self::delTree('Projects/tmp/' . $user->getUsername());
             require 'Views/panel/newproject.php';
+        }
     }
 
     public function projectAction()
@@ -326,10 +362,10 @@ class Controller
                     array_push($testsArray, $newTest);
 
                     //on copie maintenant la classe de test dans le repertoire du projet
-                    $projectDir = "Projects/". $projectId;
+                    $projectDir = "Projects/". $projectId . '/src';
                     if(!is_dir($projectDir))
                         mkdir($projectDir, 0755, true);
-                    copy("Projects/tmp/" . $user->getUsername(). "/" . $test["class"] . ".java", $projectDir . "/" . $test["class"] . ".java");
+                    copy("Projects/tmp/" . $user->getUsername(). "/" . $test["class"] . ".java", $projectDir . '/' . $test["class"] . ".java");
                 }
                 else
                 {
