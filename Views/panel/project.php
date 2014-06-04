@@ -1,5 +1,5 @@
 <?php
-    require_once '/Views/header.php';
+    require_once 'Views/header.php';
 ?>
     <h2><?php echo $project->getName(); ?></h2>
 
@@ -50,5 +50,5 @@
         </table>
     </div>
 <?php
-    require_once '/Views/footer.php';
+    require_once 'Views/footer.php';
 ?>

@@ -1,5 +1,5 @@
 <?php
-    require_once '/Views/header.php';
+    require_once 'Views/header.php';
 ?>
     <div class="row">
         <div class="col-md-6">
@@ -30,5 +30,5 @@
         </div>
     </div>
 <?php
-    require_once '/Views/footer.php';
+    require_once 'Views/footer.php';
 ?>

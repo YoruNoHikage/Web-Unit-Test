@@ -1,13 +1,14 @@
 <?php
-    require_once '/Views/header.php';
+    require_once 'Views/header.php';
 ?>
     <h2>Envoyer un projet</h2>
      
     <form class="form-horizontal" action="index.php?action=uploadsources" method="post" role="form">
+        <input type="hidden" name="projectId" value="<?php echo $projectId; ?>"/>
         <div class="form-group">
             <div class="jumbotron">
                 
-                <?php require_once 'formuploadarea.php' ?>
+                <?php require_once 'Views/panel/formuploadarea.php' ?>
                 
                 <div id="upload-uniquefile" class="panel panel-default">
                     <div class="panel-heading">Filename</div>
@@ -31,5 +32,5 @@
         </div>
     </form>
 <?php
-    require_once '/Views/footer.php';
+    require_once 'Views/footer.php';
 ?>
