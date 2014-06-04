@@ -1,14 +1,14 @@
 <?php
     require_once 'Views/header.php';
 ?>
-    <h2>Résultat de Mr Goanvic</h2>
+    <h2>Résultat de <?php echo $pupil->getFirstname() . ' ' . $pupil->getLastname();?></h2>
     
     <div class="col-md-8 col-md-push-2">
         <table class="table table-striped text-center">
             <thead>
                 <tr>
                     <th>Nom du test</th>
-                    <th>Nom du test</th>
+                    <th>Nom du sous-test</th>
                     <th>Description</th>
                     <th>Erreurs</th>
                     <th>Poids</th>
@@ -24,8 +24,8 @@
                     <tr class="<?php echo $result["result"]->getStatus() ? 'success' : 'danger' ?>">
                         <td><?php echo $result["subtest"]->getTest()->getName(); ?></td>
                         <td><?php echo $result["subtest"]->getName(); ?></td>
-                        <td>Patate</td>
-                        <td>Que dalle</td>
+                        <td>Description</td>
+                        <td><?php echo $result["result"]->getError(); ?></td>
                         <td><?php echo $result["subtest"]->getWeight(); ?></td>
                         <td><?php echo $result["result"]->getStatus() ? "OK" : "KO"; ?></td>
                     </tr>
