@@ -1,5 +1,5 @@
 <?php
-    require_once '/Views/header.php';
+    require_once 'Views/header.php';
     
     if(isset($_SESSION['user'])) // If the user is logged in
     {
@@ -90,5 +90,5 @@
 <?php
     }
     
-    require_once '/Views/footer.php';
+    require_once 'Views/footer.php';
 ?>

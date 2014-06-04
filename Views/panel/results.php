@@ -1,5 +1,5 @@
 <?php
-    require_once '/Views/header.php';
+    require_once 'Views/header.php';
 ?>
     <h2>Résultat de Mr Goanvic</h2>
     
@@ -36,5 +36,5 @@
         </table>
     </div>
 <?php
-    require_once '/Views/footer.php';
+    require_once 'Views/footer.php';
 ?>

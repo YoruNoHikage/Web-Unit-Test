@@ -1,5 +1,5 @@
 <?php
-    require_once '/Views/header.php';
+    require_once 'Views/header.php';
 ?>
     <div class="col-md-12 text-center">
         <p>Voulez-vous vraiment supprimer ce projet ?</p>
@@ -13,5 +13,5 @@
     </div>
     
 <?php
-    require_once '/Views/footer.php';
+    require_once 'Views/footer.php';
 ?>
