@@ -48,7 +48,6 @@ class Controller
 
     public function signInAction()
     {
-        var_dump($_SESSION);
         if($this->getSession('user')) // if already connected
         {
             //echo $this->getSession('user');
@@ -113,7 +112,8 @@ class Controller
 
             foreach($files as $file)
             {
-                if(end(explode('.', $file)) == 'zip')
+                $filename = explode('.', $file);
+                if(end($filename) == 'zip')
                 {
                     $res = $zip->open($url . '/' . $file);
                     if ($res === true && isset($_POST['projectId']))
@@ -131,7 +131,7 @@ class Controller
                     } else {
                         $this->setFlash('Projet non uploadé');
                     }
-                    header("Location: index.php?action=userpanel");
+                    header("Location: index.php?action=results&projectid=" . $_POST['projectId'] . "&username=" . $user->getUsername());
                 }
             }
         }
@@ -417,7 +417,6 @@ class Controller
     public function resultsAction()
     {
         $user = $this->connectedOnly();
-        $this->teacherOnly($user);
         
         if(isset($_GET['projectid']) && isset($_GET['username']))
         {
@@ -439,7 +438,8 @@ class Controller
     public function launchTests($projectId, $username)
     {
         //windows compilation
-        exec('javac -cp  ./Lib/*;./Projects;./Projects/'. $projectID .'/src/'. $username . ';./Projects/' . $projectId . '/tests ./Projects/Main.java ./Projects/' . $projectId . '/src/' . $username .'/*.java');
+        $cmd = 'javac -cp  ./Lib/*;./Projects;./Projects/'. $projectId .'/src/'. $username . ';./Projects/' . $projectId . '/tests ./Projects/Main.java ./Projects/' . $projectId . '/src/' . $username .'/*.java';
+        exec($cmd);
         exec('java -cp  ./Lib/*;./Projects;./Projects/' . $projectId . '/src/' . $username . ';./Projects/' . $projectId . '/tests Main ' . $projectId . ' ' . $username);
         //linux compilation
         //exec("javac -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/8/src/pizza:Projects/8/tests Projects/Main.java Projects/8/src/pizza/Money.java");
