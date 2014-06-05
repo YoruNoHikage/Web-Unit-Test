@@ -159,4 +159,11 @@
 			}
 			return $user;
 		}
+
+		public function deleteUserResults($user, $projectId)
+		{
+			$params = array("projectId" => $projectId, "username" => $user->getUsername());
+			$sth = $this->execute("DELETE FROM users_test WHERE users_test.project_id = :projectId AND users_test.username = :username", $params);
+			var_dump($sth->errorInfo());
+		}
 	}

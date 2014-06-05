@@ -121,10 +121,13 @@ class Controller
                         $projectDir = "Projects/". $_POST['projectId'] . '/src/' . $user->getUsername();
                         if(is_dir($projectDir))
                             self::delTree($projectDir);
+                        $userModel = new UserModel();
+                        $userModel->deleteUserResults($user, $_POST['projectId']);
                         mkdir($projectDir, 0755, true);
                         $zip->extractTo($projectDir);
                         $zip->close();
                         $this->setFlash('Projet uploadé');
+                        $this->launchTests($_POST['projectId'], $user->getUsername());
                     } else {
                         $this->setFlash('Projet non uploadé');
                     }
@@ -431,6 +434,17 @@ class Controller
         $pupil = $userModel->getUserWithProjectResults($username, $projectId);
         
         require 'Views/panel/results.php';
+    }
+
+    public function launchTests($projectId, $username)
+    {
+        //windows compilation
+        exec('javac -cp  ./Lib/*;./Projects;./Projects/'. $projectID .'/src/'. $username . ';./Projects/' . $projectId . '/tests ./Projects/Main.java ./Projects/' . $projectId . '/src/' . $username .'/*.java');
+        exec('java -cp  ./Lib/*;./Projects;./Projects/' . $projectId . '/src/' . $username . ';./Projects/' . $projectId . '/tests Main ' . $projectId . ' ' . $username);
+        //linux compilation
+        //exec("javac -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/8/src/pizza:Projects/8/tests Projects/Main.java Projects/8/src/pizza/Money.java");
+        //exec("java -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/8/src/pizza:Projects/8/tests Main");
+
     }
 
     public function setFlashError($message)

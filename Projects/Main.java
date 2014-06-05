@@ -10,18 +10,19 @@ import java.util.regex.*;
 public class Main {
 	
 	public static void main(String[] args) {
+	
 		
 		ArrayList<String> subtestsAvailable = new ArrayList<String>();
 		
-		String username = "yoyolabricot";
-		int projectId = 29;
-		String testName = "MoneyTest2";
+		int projectId = Integer.parseInt(args[0]);
+		String username = args[1];
+		String testName = "MoneyTest";
 		
 		GestionBDD gestionBDD = new GestionBDD();
 		
 		subtestsAvailable = gestionBDD.getTests(testName);
 		
-		Result result = JUnitCore.runClasses(MoneyTest2.class);
+		Result result = JUnitCore.runClasses(MoneyTest.class);
 	    System.out.println(result.getRunCount() + " test(s) run, " + result.getFailureCount() + " failure(s)"); 
 	    Pattern p = Pattern.compile("(.*?)\\((.*?)\\)\\:(.*?)$");
 		
