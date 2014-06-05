@@ -170,10 +170,12 @@ class Controller
         {
             if($_POST['status'] == 'old' && isset($_POST['projectid']))
             {
-                $fileToDelete = 'Projects/' . $_POST['projectid'] . '/' . $_POST['class'];
+                $fileToDelete = 'Projects/' . $_POST['projectid'] . '/' . $_POST['class'] . '.java';
                 if(file_exists($fileToDelete)) {
-                    unlink($fileToDelete);
-                    header($_SERVER["SERVER_PROTOCOL"]." 200 OK");
+                    $testModel = new TestModel();
+                    $testModel->deleteTest($_POST['projectid'], $_POST['class']); // deletes the test in DB
+                    unlink($fileToDelete); // deletes the test on the server
+                    header($_SERVER["SERVER_PROTOCOL"]." 200 OK : " . $_POST['projectid'] . " " .$_POST['class']);
                 }
                 else {
                     header($_SERVER["SERVER_PROTOCOL"]." 404 File " . $fileToDelete . " Not Found");
@@ -377,7 +379,7 @@ class Controller
                     array_push($testsArray, $newTest);
 
                     //on copie maintenant la classe de test dans le repertoire du projet
-                    $projectDir = "Projects/". $projectId . '/src';
+                    $projectDir = "Projects/". $projectId . '/tests';
                     if(!is_dir($projectDir))
                         mkdir($projectDir, 0755, true);
                     copy("Projects/tmp/" . $user->getUsername(). "/" . $test["class"] . ".java", $projectDir . '/' . $test["class"] . ".java");

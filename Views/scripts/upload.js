@@ -141,7 +141,7 @@ window.onload = function () {
         for (i = 1; i < childs.length - 1; i++) {
             var child = $(childs[i]).children('.close');
             if (child) {
-                child.bind('click', function () { return bindDeleteOnClick($(this).attr('id') + '.java', 'old', projectId); });
+                child.bind('click', function () { return bindDeleteOnClick($(this).attr('id'), 'old', projectId); });
             }
         }
     }
