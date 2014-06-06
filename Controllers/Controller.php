@@ -437,14 +437,59 @@ class Controller
 
     public function launchTests($projectId, $username)
     {
-        //windows compilation
-        $cmd = 'javac -cp  ./Lib/*;./Projects;./Projects/'. $projectId .'/src/'. $username . ';./Projects/' . $projectId . '/tests ./Projects/Main.java ./Projects/' . $projectId . '/src/' . $username .'/*.java';
-        exec($cmd);
-        exec('java -cp  ./Lib/*;./Projects;./Projects/' . $projectId . '/src/' . $username . ';./Projects/' . $projectId . '/tests Main ' . $projectId . ' ' . $username);
-        //linux compilation
-        //exec("javac -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/8/src/pizza:Projects/8/tests Projects/Main.java Projects/8/src/pizza/Money.java");
-        //exec("java -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/8/src/pizza:Projects/8/tests Main");
+        $projectModel = new ProjectModel();
+        $project = $projectModel->getOneProjectBy($projectId);
+        $project = $projectModel->getProjectTests($project);
 
+        //on verifie si les fichiers de tests sont bien tous presents
+        $fileMissing = false;
+        $testNames = array();
+        foreach($project->getTests() as $test)
+        {
+            if(!file_exists('Projects/' . $projectId . '/tests/' . $test->getName() . '.java'))
+                $fileMissing = true;
+            array_push($testNames, $test->getName());
+        }
+
+        if(!$fileMissing)
+        {
+            $output = array();
+            //$cmdCompil'javac -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Projects/Main.java Projects/' . $projectId . '/src/' . $username . '/Money.java 2>&1'
+            $cmdCompil = 'javac -cp  ./Lib/*;./Projects;./Projects/'. $projectId .'/src/'. $username . ';./Projects/' . $projectId . '/tests ./Projects/Main.java ./Projects/' . $projectId . '/src/' . $username .'/*.java ./Projects/' . $projectId . '/tests/*.java 2>&1';
+            exec($cmdCompil, $output);
+            var_dump($output);
+            if(count($output) > 0)
+            {
+                $error = 'Erreur JAVA :';
+                foreach($output as $outputline)
+                {
+                    $error .= $outputline;
+                }
+                $this->setFlashError($error);
+                header("Location: index.php?action=userpanel");
+            }
+            else
+            {
+                //$cmdLaunch = 'java -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Main ' . implode(' ', $project->getTests()) . ' 2>&1';
+                $cmdLaunch = 'java -cp  ./Lib/*;./Projects;./Projects/' . $projectId . '/src/' . $username . ';./Projects/' . $projectId . '/tests Main ' . $projectId . ' ' . $username . ' ' . implode(' ', $testNames) . ' 2>&1';
+                exec($cmdLaunch, $output);
+                /*if(count($output) > 0)
+                {
+                    $error = 'Erreur JAVA :';
+                    foreach($output as $outputline)
+                    {
+                        $error .= $outputline;
+                    }
+                    $this->setFlashError($error);
+                    header("Location: index.php?action=userpanel");
+                }*/
+            }
+        }
+        else
+        {
+            $this->setFlashError('Il manque des fichiers nécessaires à la compilation');
+            header("Location: index.php?action=userpanel");
+        }
     }
 
     public function setFlashError($message)

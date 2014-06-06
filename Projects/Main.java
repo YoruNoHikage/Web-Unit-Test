@@ -7,43 +7,59 @@ import java.util.ArrayList;
 
 import java.util.regex.*;
 
-public class Main {
+public class Main{
 	
-	public static void main(String[] args) {
-	
+	public static void main(String[] args) throws ClassNotFoundException {
 		
-		ArrayList<String> subtestsAvailable = new ArrayList<String>();
-		
-		int projectId = Integer.parseInt(args[0]);
-		String username = args[1];
-		String testName = "MoneyTest";
-		
+		ArrayList<String> testsAvailable = new ArrayList<String>();
 		GestionBDD gestionBDD = new GestionBDD();
 		
-		subtestsAvailable = gestionBDD.getTests(testName);
+		int i = 0;
+		int projectId = 300;
+		String username = "Michel";
+		for(String arg : args)
+		{
+			if(i == 0)
+				projectId = Integer.parseInt(arg);
+			else if(i == 1)
+				username = arg;
+			else
+				testsAvailable.add(arg);
+			i++;
+		}
 		
-		Result result = JUnitCore.runClasses(MoneyTest.class);
-	    System.out.println(result.getRunCount() + " test(s) run, " + result.getFailureCount() + " failure(s)"); 
-	    Pattern p = Pattern.compile("(.*?)\\((.*?)\\)\\:(.*?)$");
+		//System.out.println(username+"/"+projectId);
 		
-	    for (Failure failure : result.getFailures()) {
+		for(String test : testsAvailable)
+		{
+			ArrayList<String> subtestsAvailable = new ArrayList<String>();
+			subtestsAvailable = gestionBDD.getTests(test);
 			
-			Matcher m = p.matcher(failure.toString());
-			if(m.matches())
+			Class<?> cls = Class.forName(test);
+			Result result = JUnitCore.runClasses(cls);
+			//System.out.println(result.getRunCount() + " test(s) run, " + result.getFailureCount() + " failure(s)"); 
+			Pattern p = Pattern.compile("(.*?)\\((.*?)\\)\\:(.*?)$");
+			
+			for(Failure failure : result.getFailures()) {
+			
+				System.out.println(failure.toString());
+				
+				Matcher m = p.matcher(failure.toString());
+				if(m.matches())
+				{
+					String subtestName = m.group(1);
+					String errors = m.group(3);
+					
+					gestionBDD.addResult(projectId, test, subtestName, username, 0, errors);
+					
+					if(subtestsAvailable.contains(subtestName))
+						subtestsAvailable.remove(subtestName);
+				}
+			}
+			for (String subtestSuccess : subtestsAvailable)
 			{
-			    String subtestName = m.group(1);
-			    String errors = m.group(3);
-			    
-			    gestionBDD.addResult(projectId, testName, subtestName, username, 0, errors);
-			    
-			    if(subtestsAvailable.contains(subtestName))
-			    	subtestsAvailable.remove(subtestName);
+				gestionBDD.addResult(projectId, test, subtestSuccess, username, 1, "success");
 			}
 		}
-	    for (String subtestSuccess : subtestsAvailable)
-		{
-			gestionBDD.addResult(projectId, testName, subtestSuccess, username, 1, "success");
-		}
-	    
 	}
 } 
