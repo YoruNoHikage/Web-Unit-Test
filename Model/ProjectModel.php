@@ -135,7 +135,8 @@
 
 		public function getAllTestNames($projectId)
 		{
-			$sth = $this->execute("SELECT test.name FROM test WHERE test.project_id = :project_id", array("project_id", $projectId));
+			$sth = $this->execute("SELECT test.name FROM test WHERE test.project_id = :project_id", 
+                                  array("project_id" => $projectId));
 			$namesDb = $sth->fetchAll();
 
 			$namesArray = array();
@@ -175,6 +176,18 @@
 			$req = $sth->fetch();
 			$project->setId(intval($req["lastInsertId"]));
 		}
+        
+        public function updateProject($project)
+		{
+			 $sth = $this->execute("UPDATE project SET name = :projectName, enabled = :enabled, due_date = :due_date
+                                    WHERE id = :id",
+                                   array("id" => $project->getId(), 
+                                         "projectName" => $project->getName(),
+                                         "enabled" => $project->getEnabled(),
+                                         "due_date" => $project->getDue_date()->format("Y-m-d H:i:s")
+                                        ));
+			$req = $sth->fetch();
+		}
 
 		public function addTests($projectId, $tests)
 		{
@@ -210,6 +223,36 @@
 			$sth = $this->execute($testsQuery . implode(", ", $testEntries), $testParams);
 			$sth = $this->execute($subtestsQuery . implode(", ", $subtestEntries), $subtestParams);
 		}
+        
+        public function updateTestsSubtests($projectId, $tests)
+        {
+            $sql = "UPDATE subtest
+                    SET weight = CASE name ";
+            
+            $display_names = array();
+            
+            $subtests = array();
+            foreach($tests as $test)
+            {
+                $subs = $test->getSubtests();
+                foreach($subs as $sub)
+                    array_push($subtests, $sub);
+            }
+            
+            foreach($subtests as $sub)
+            {
+                // TO DO : Fix this
+                // doesn't work with redundancy
+                $sql .= "WHEN '" . $sub->getName() . /*"' AND test_name = '" . $sub->getTest()->getName() .*/ "' THEN " . $sub->getWeight() . " ";
+                $display_names["'" . $sub->getName() . "'"] = $sub->getWeight();
+            }
+            $names = implode(',', array_keys($display_names));
+            
+            $sql .= "END WHERE name IN (" . $names . ")";
+            
+            echo $sql;
+            $sth = $this->execute($sql);
+        }
 
 		public function deleteProject($projectId)
 		{

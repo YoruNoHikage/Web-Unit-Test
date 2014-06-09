@@ -5,7 +5,9 @@
             
     ?>
 
-    <form class="form-horizontal" action="index.php?action=<?php echo $_GET['action'] ;?>" method="post" role="form">
+    <form class="form-horizontal" 
+          action="index.php?action=<?php echo $_GET['action']; if(isset($_GET['id'])) { echo '&id=' . $_GET['id']; } ?>"
+          method="post" role="form">
         <div class="form-group">
             <label for="name" class="col-sm-3 control-label">Nom du projet</label>
             <div class="col-sm-9">

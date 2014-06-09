@@ -18,6 +18,42 @@
 			}
 			return $testArray;
 		}*/
+        
+        public function getTestsSubtestsByProjectId($projectId) {
+            $sth = $this->execute("SELECT test.project_id, test.name, description, subtest.name as subtest_name, weight, kind 
+                                    FROM test 
+                                    INNER JOIN subtest ON test.name = subtest.test_name
+                                    WHERE test.project_id = :projectid", 
+                                  array("projectid" => $projectId));
+			
+            $testsSubDb = $sth->fetchAll();
+            
+            $currentTest = null;
+            $tests = array();
+			foreach($testsSubDb as $key => $testSubDb)
+            {
+                if($key == 0 || $testsSubDb[$key]['name'] !== $currentTest->getName()) {
+                    $currentTest = new Test();
+                    $currentTest->setName($testSubDb['name']);
+                    $currentTest->setFullname($testSubDb["name"] . ":" . $testSubDb["project_id"]);
+                    $currentTest->setDescription($testSubDb['description']);
+                }
+                
+                // in all cases, we have to add the subtest to the test
+                $subtest = new Subtest();
+                $subtest->setName($testSubDb["subtest_name"]);
+                $subtest->setFullname($testSubDb["subtest_name"] . ":" . $testSubDb["name"] . ":" . $testSubDb["project_id"]);
+                $subtest->setWeight($testSubDb["weight"]);
+                $subtest->setKind($testSubDb["kind"]);
+                $currentTest->addSubtest($subtest);
+                
+                // if the next line isn't the same subtest, we're done for it
+                if(!isset($testsSubDb[$key + 1]) || $testsSubDb[$key + 1]['name'] !== $currentTest->getName()) {
+                    array_push($tests, $currentTest);
+                }
+			}
+			return $tests;
+        }
 
 		public function getTestSubtests($test){
 			$sth = $this->execute("SELECT * FROM subtest WHERE subtest.test_name = :testName AND subtest.project_id = :projectId", 

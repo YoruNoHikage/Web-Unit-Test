@@ -4,7 +4,10 @@
     <h2>Éditer un projet</h2>
                 
 <?php
-    require_once 'Views/panel/formproject.php';
+    if($_SERVER['REQUEST_METHOD'] != 'POST')
+        require_once 'Views/panel/formproject.php';
+    else
+        require_once 'Views/panel/formmarks.php';
     
     require_once 'Views/footer.php';
 ?>

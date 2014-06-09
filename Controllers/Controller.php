@@ -168,20 +168,20 @@ class Controller
     {
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
-        
+
         if(isset($_POST['class']) && isset($_POST['status']))
         {
             if($_POST['status'] == 'old' && isset($_POST['projectid']))
             {
-                $fileToDelete = 'Projects/' . $_POST['projectid'] . '/' . $_POST['class'] . '.java';
+                $fileToDelete = 'Projects/' . $_POST['projectid'] . '/tests/' . $_POST['class'] . '.java';
                 if(file_exists($fileToDelete)) {
                     $testModel = new TestModel();
                     $testModel->deleteTest($_POST['projectid'], $_POST['class']); // deletes the test in DB
                     unlink($fileToDelete); // deletes the test on the server
-                    header($_SERVER["SERVER_PROTOCOL"]." 200 OK : " . $_POST['projectid'] . " " .$_POST['class']);
+                    //header($_SERVER["SERVER_PROTOCOL"]." 200 OK : " . $_POST['projectid'] . " " .$_POST['class']);
                 }
                 else {
-                    header($_SERVER["SERVER_PROTOCOL"]." 404 File " . $fileToDelete . " Not Found");
+                    header($_SERVER["SERVER_PROTOCOL"]." 404 Not Found");
                 }
             }
             else if($_POST['status'] == 'new')
@@ -201,6 +201,39 @@ class Controller
         }
     }
 
+    public function serializeTests($user)
+    {
+        //nous allons verifier tous les fichiers dans le rep tmp de l'utilisateur
+        $url = 'Projects/tmp/' . $user->getUsername();
+        $filenames = scandir($url);
+
+        $filesToProcess = array();
+        //pour chaque fichier à traiter
+        foreach($filenames as $filename)
+        {
+            $filenameExploded = explode('.', $filename);
+
+            $extension = end($filenameExploded);
+            //on verifie que l'extension est bien .java
+            if($extension == 'java')
+            {
+                $file = fopen($url . '/' . $filename, 'r');
+                $content = fread($file, filesize($url . '/' . $filename));
+                fclose($file);
+
+                preg_match_all('#@Test([\t\n\r\s])+public void (.*?)\(#', $content, $matches);
+                $testFuncs = array();
+                foreach($matches[2] as $name)
+                {
+                    array_push($testFuncs, array("name" => $name, "value" => 1));
+                }
+                array_push($filesToProcess, array('class' => $filenameExploded[0], 'subtests' => $testFuncs, 'reprocess' => false));
+            }
+        }
+
+        return $filesToProcess;
+    }
+
     public function newProjectAction()
     {
         $user = $this->connectedOnly();
@@ -208,36 +241,14 @@ class Controller
 
         if($_SERVER['REQUEST_METHOD'] == 'POST') // first form was sent
         {
-            //nous allons verifier tous les fichiers dans le rep tmp de l'utilisateur
-            $url = 'Projects/tmp/' . $user->getUsername();
-            $filenames = scandir($url);
-
-            $filesToProcess = array();
-            //pour chaque fichier à traiter
-            foreach($filenames as $filename)
-            {
-                $filenameExploded = explode('.', $filename);
-
-                $extension = end($filenameExploded);
-                //on verifie que l'extension est bien .java
-                if($extension == 'java')
-                {
-                    $file = fopen($url . '/' . $filename, 'r');
-                    $content = fread($file, filesize($url . '/' . $filename));
-                    fclose($file);
-                    
-                    preg_match_all('#@Test([\t\n\r\s])+public void (.*?)\(#', $content, $matches);
-                    $testFuncs = $matches[2];
-                    array_push($filesToProcess, array('class' => $filenameExploded[0], 'subtests' => $testFuncs));
-                }
-            }
+            $filesToProcess = $this->serializeTests($user);
             $this->setSession("tests", serialize($filesToProcess));
 
             //on verif que les champs ont bien ete remplis
             if(isset($_POST['name']) && isset($_POST['duedate']))
             {
                 $duedate = DateTime::createFromFormat('d/m/Y H:i', $_POST['duedate']);
-                
+
                 $projectModel = new ProjectModel(); 
                 $project = new Project();
                 $project->setName($_POST['name']);
@@ -303,6 +314,41 @@ class Controller
             {
                 $test = $testModel->getTestSubtests($test);
             }
+            
+            if($_SERVER['REQUEST_METHOD'] == 'POST') // first form was sent
+            {
+                $filesToProcess = $this->serializeTests($user);
+                foreach($project->getTests() as $test)
+                {
+                    $subtests = array();
+                    foreach($test->getSubtests() as $sub)
+                    {
+                        array_push($subtests, array("name" => $sub->getName(), "value" => $sub->getWeight()));
+                    }
+                    array_push($filesToProcess, array('class' => $test->getName(),
+                                                      'subtests' => $subtests,
+                                                      'reprocess' => true));
+                }
+                $this->setSession("tests", serialize($filesToProcess)); // we keep the new and edited files
+
+                if(isset($_POST['name']) && isset($_POST['duedate']))
+                {
+                    $duedate = DateTime::createFromFormat('d/m/Y H:i', $_POST['duedate']);
+
+                    $project->setId($_POST['projectid']);
+                    $project->setName($_POST['name']);
+                    $project->setDue_date($duedate);
+                    
+                    $projectModel->updateProject($project);
+                }
+                else
+                {
+                    $this->setFlashError('Veuillez remplir tous les champs');
+                    header("Location: index.php?action=editproject&id=" . $_GET['id']);
+                }
+
+                require 'Views/panel/editproject.php';
+            }
         }
         else
         {
@@ -350,17 +396,27 @@ class Controller
         {
             $projectId = $_GET["id"];
             $tests = unserialize($this->getSession("tests"));
-            $this->deleteSession("tests");
+            //$this->deleteSession("tests");
             $testsArray = array();
 
-            //on recupere tous les noms de tests en base afin d'eviter les doublons
-            $projectModel = new ProjectModel();
-            $testNames = $projectModel->getAllTestNames($projectId);
-
-            foreach ($tests as $test)
+            // we get the tests in database to avoid redundancy and to update the old ones
+            $testModel = new TestModel();
+            $testsDb = $testModel->getTestsSubtestsByProjectId($projectId);
+            
+            // just the names
+            $testNames = array();
+            foreach($testsDb as $testDb)
             {
-                //verification des doublons
-                if(!in_array($test["class"], $testNames))
+                if(!in_array($testDb->getName(), $testNames))
+                    array_push($testNames, $testDb->getName());
+            }
+            
+            $error = null;
+            foreach($tests as $test)
+            {
+                // if the test doesn't exist
+                $key = array_search($test["class"], $testNames);
+                if($key === false)
                 {
                     $newTest = new Test();
                     $newTest->setName($test["class"]);
@@ -371,8 +427,8 @@ class Controller
                     foreach($subtests as $subtest)
                     {
                         $newSubtest = new Subtest();
-                        $newSubtest->setName($subtest);
-                        $fullname = $subtest . ":" . $test["class"] . ":" . $projectId;
+                        $newSubtest->setName($subtest['name']);
+                        $fullname = $subtest['name'] . ":" . $test["class"] . ":" . $projectId;
                         $newSubtest->setFullname($fullname);
                         if(isset($_POST[$fullname]))
                             $newSubtest->setWeight($_POST[$fullname]);
@@ -385,25 +441,38 @@ class Controller
                     $projectDir = "Projects/". $projectId . '/tests';
                     if(!is_dir($projectDir))
                         mkdir($projectDir, 0755, true);
-                    copy("Projects/tmp/" . $user->getUsername(). "/" . $test["class"] . ".java", $projectDir . '/' . $test["class"] . ".java");
+                    
+                    $location = "Projects/tmp/" . $user->getUsername(). "/" . $test["class"] . ".java";
+                    if(file_exists($location))
+                        copy($location, $projectDir . '/' . $test["class"] . ".java");
                 }
-                else
+                else // update the test
+                {                    
+                    $subs = $testsDb[$key]->getSubtests();
+                    foreach($subs as $sub)
+                    {
+                        //echo $sub->getWeight();
+                        $sub->setWeight($_POST[$sub->getFullname()]);
+                        //echo ' => ' . $sub->getWeight() . '<br/>';
+                    }
+                }
+                
+                if(!$test["reprocess"]) // if the files in tmp are new, we delete them
                 {
-                    $this->setFlashError("Nom de test déjà utilisé : " . $test["class"]);
-                    header("Location: index.php");
+                    unlink("Projects/tmp/" . $user->getUsername() . "/" . $test["class"] . ".java");
                 }
-                //on supprime le fichiers de tmp
-                unlink("Projects/tmp/" . $user->getUsername() . "/" . $test["class"] . ".java");
             }
+            
+            $projectModel = new ProjectModel();
             //si on a bien des tests à rajouter
-            if(count($testsArray))
+            if(count($testsArray) && !$error)
             {
-                $projectModel = new ProjectModel();
                 $projectModel->addTests($projectId, $testsArray);
                 $this->setFlash("Les tests ont bien été ajoutés !");
             }
-            else
-                $this->setFlash("Aucun test ajouté !");
+            
+            // We update the others
+            $projectModel->updateTestsSubtests($projectId, $testsDb);
 
             header("Location: index.php?action=userpanel");
         }
@@ -413,11 +482,11 @@ class Controller
             header("Location: index.php");
         }
     }
-    
+
     public function resultsAction()
     {
         $user = $this->connectedOnly();
-        
+
         if(isset($_GET['projectid']) && isset($_GET['username']))
         {
             $projectId = $_GET['projectid'];
@@ -428,10 +497,10 @@ class Controller
             $this->setFlashError('Mauvais paramètres !');
             header("Location: index.php");
         }
-        
+
         $userModel = new userModel();
         $pupil = $userModel->getUserWithProjectResults($username, $projectId);
-        
+
         require 'Views/panel/results.php';
     }
 
@@ -481,7 +550,7 @@ class Controller
     {
         $files = array_diff(scandir($dir), array('.','..'));
         foreach ($files as $file) {
-          (is_dir("$dir/$file")) ? self::delTree("$dir/$file") : unlink("$dir/$file");
+            (is_dir("$dir/$file")) ? self::delTree("$dir/$file") : unlink("$dir/$file");
         }
         return rmdir($dir);
     } 
