@@ -2,7 +2,6 @@ import org.junit.runner.JUnitCore;
 import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 
-
 import java.util.ArrayList;
 
 import java.util.regex.*;
@@ -33,16 +32,18 @@ public class Main{
 		for(String test : testsAvailable)
 		{
 			ArrayList<String> subtestsAvailable = new ArrayList<String>();
-			subtestsAvailable = gestionBDD.getTests(test);
+			subtestsAvailable = gestionBDD.getTests(projectId, test);
 			
 			Class<?> cls = Class.forName(test);
 			Result result = JUnitCore.runClasses(cls);
 			//System.out.println(result.getRunCount() + " test(s) run, " + result.getFailureCount() + " failure(s)"); 
 			Pattern p = Pattern.compile("(.*?)\\((.*?)\\)\\:(.*?)$");
 			
+			//System.out.println(subtestsAvailable);
+			
 			for(Failure failure : result.getFailures()) {
 			
-				System.out.println(failure.toString());
+				//System.out.println(failure.toString());
 				
 				Matcher m = p.matcher(failure.toString());
 				if(m.matches())

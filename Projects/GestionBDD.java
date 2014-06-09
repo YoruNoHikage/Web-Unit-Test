@@ -8,7 +8,7 @@ public class GestionBDD {
 	}
 	
 	@SuppressWarnings("finally")
-	public ArrayList<String> getTests(String testName)
+	public ArrayList<String> getTests(int projectId, String testName)
 	{
 		ArrayList<String> testsAvailable = new ArrayList<String>();
 		
@@ -22,7 +22,8 @@ public class GestionBDD {
 			con = DriverManager.getConnection("jdbc:mysql://localhost/projet_web", "root", "");
 			st = con.createStatement();
 			
-			rs = st.executeQuery("SELECT subtest.name FROM subtest WHERE subtest.test_name = '" + testName + "'");
+			//System.out.println("SELECT subtest.name FROM subtest WHERE subtest.test_name = '" + testName + "' AND subtest.project_id=" + projectId);
+			rs = st.executeQuery("SELECT subtest.name FROM subtest WHERE subtest.test_name = '" + testName + "' AND subtest.project_id=" + projectId);
 			
 			while (rs.next())
 			{
@@ -62,6 +63,7 @@ public class GestionBDD {
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
 			con = DriverManager.getConnection("jdbc:mysql://localhost/projet_web", "root", "");
 			st = con.createStatement();
+			//System.out.println("INSERT INTO users_test (project_id, test_name, subtest_name, username, status, errors) VALUES ('" + projectId + "', '" + testName + "', '" + subtestName + "', '" + username + "', " + Integer.toString(status) + ", '" + errors + "')");
 			st.executeUpdate("INSERT INTO users_test (project_id, test_name, subtest_name, username, status, errors) VALUES ('" + projectId + "', '" + testName + "', '" + subtestName + "', '" + username + "', " + Integer.toString(status) + ", '" + errors + "')");
 		}
 		catch(Exception e)

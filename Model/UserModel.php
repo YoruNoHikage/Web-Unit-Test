@@ -20,6 +20,16 @@
 			}
 			return $userArray;
 		}
+
+		public function getNbUsers(){
+			$userArray = array();
+
+			$sth = $this->execute("SELECT COUNT(*) AS nb_users FROM users");
+			$req = $sth->fetch();
+			$nbUsers = $req['nb_users'];
+
+			return $nbUsers;
+		}
 		
 		public function getOneUserBy($username)
         {

@@ -6,7 +6,7 @@
 		public function getAllProjects(){
 			$projectArray = array();
 
-			$sth = $this->execute("SELECT * FROM project");
+			$sth = $this->execute("SELECT * FROM project ORDER BY project.due_date DESC");
 			$req = $sth->fetchAll();
 
 			foreach($req as $projectDb){
@@ -18,6 +18,27 @@
 				array_push($projectArray, $project);
 			}
 			return $projectArray;
+		}
+
+		public function getProjectStats($project)
+		{
+			$stats = array();
+			foreach($project->getTests() as $test)
+			{
+				$params = array("testName" => $test->getName(), "projectId" => $project->getId());
+				//nb subtests
+				$sth = $this->execute("SELECT COUNT(*) AS nbSubtests FROM users_test WHERE test_name = :testName AND project_id = :projectId", $params);
+				$req = $sth->fetch();
+				$nbSubtests = $req["nbSubtests"];
+
+				//nb success subtests
+				$sth = $this->execute("SELECT COUNT(*) AS nbSubtestsSuccess FROM users_test WHERE test_name = :testName AND project_id = :projectId AND status = 1", $params);
+				$req = $sth->fetch();
+				$nbSubtestsSuccess = $req["nbSubtestsSuccess"];
+
+				$stats[$test->getName()] = ($nbSubtests != 0) ? $nbSubtestsSuccess * 100 / $nbSubtests : 0;
+			}
+			return $stats;
 		}
 
 		public function getOneProjectBy($id)

@@ -131,7 +131,6 @@ class Controller
                     } else {
                         $this->setFlash('Projet non uploadé');
                     }
-                    header("Location: index.php?action=results&projectid=" . $_POST['projectId'] . "&username=" . $user->getUsername());
                 }
             }
         }
@@ -277,12 +276,21 @@ class Controller
 
         $projectModel = new ProjectModel();
         $project = $projectModel->getOneProjectBy($projectId);
+        $project = $projectModel->getProjectTests($project); 
 
         $projectTotalWeight = $projectModel->getProjectTotalWeight($project);
 
         $project = $projectModel->getProjectTests($project);
 
         $users = $projectModel->getProjectParticipants($project);
+
+        //get stats for pie chart
+        $userModel = new UserModel();
+        $nbUsers = $userModel->getNbUsers();
+
+        //get stats for pie charts
+        $stats = $projectModel->getProjectStats($project);
+        //var_dump($stats);
 
         require 'Views/panel/project.php';
     }
@@ -456,6 +464,7 @@ class Controller
             $output = array();
             //$cmdCompil'javac -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Projects/Main.java Projects/' . $projectId . '/src/' . $username . '/Money.java 2>&1'
             $cmdCompil = 'javac -cp  ./Lib/*;./Projects;./Projects/'. $projectId .'/src/'. $username . ';./Projects/' . $projectId . '/tests ./Projects/Main.java ./Projects/' . $projectId . '/src/' . $username .'/*.java ./Projects/' . $projectId . '/tests/*.java 2>&1';
+            echo $cmdCompil;
             exec($cmdCompil, $output);
             var_dump($output);
             if(count($output) > 0)
@@ -472,8 +481,9 @@ class Controller
             {
                 //$cmdLaunch = 'java -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Main ' . implode(' ', $project->getTests()) . ' 2>&1';
                 $cmdLaunch = 'java -cp  ./Lib/*;./Projects;./Projects/' . $projectId . '/src/' . $username . ';./Projects/' . $projectId . '/tests Main ' . $projectId . ' ' . $username . ' ' . implode(' ', $testNames) . ' 2>&1';
+                echo $cmdLaunch;
                 exec($cmdLaunch, $output);
-                /*if(count($output) > 0)
+                if(count($output) > 0)
                 {
                     $error = 'Erreur JAVA :';
                     foreach($output as $outputline)
@@ -482,7 +492,10 @@ class Controller
                     }
                     $this->setFlashError($error);
                     header("Location: index.php?action=userpanel");
-                }*/
+                }
+                else
+                    header("Location: index.php?action=results&projectid=" . $projectId . "&username=" . $username);
+
             }
         }
         else
