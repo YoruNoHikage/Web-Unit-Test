@@ -11,6 +11,8 @@
       		$('.tip').tooltip({html: true});
         </script>
         <script src="Views/scripts/moment.js"></script>
+        <script src="Views/scripts/circles.min.js"></script>
+        <script src="Views/scripts/circle-charts.js"></script>
         <script src="Views/scripts/bootstrap-datetimepicker.min.js"></script>
         <script src="Views/scripts/bootstrap-datetimepicker.fr.js"></script>
         <script>

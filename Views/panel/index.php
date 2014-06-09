@@ -24,6 +24,7 @@
             <h2>Derniers projets</h2>
             <ul>
                 <?php
+                    $now = new DateTime('now');
                     foreach($projects as $project)
                     { 
                 ?>
@@ -32,12 +33,17 @@
                         if($user->getRole() == 'student')
                         {
                     ?>
-                        <?php echo $project->getName(); ?>
-                        <a href="index.php?action=uploadsources&id=<?php echo $project->getId(); ?>" class="btn btn-primary">
-                            <span class="glyphicon glyphicon-upload"></span>
-                            Envoyer des sources
-                        </a>
+                            <?php echo $project->getName(); ?>
+                        <?php
+                            if($project->getDue_date() > $now)
+                            {
+                        ?>
+                            <a href="index.php?action=uploadsources&id=<?php echo $project->getId(); ?>" class="btn btn-primary">
+                                <span class="glyphicon glyphicon-upload"></span>
+                                Envoyer des sources
+                            </a>
                     <?php
+                            }
                         }
                         if($user->getRole() == 'teacher')
                         {
@@ -59,6 +65,10 @@
                             Aucun depot
                     <?php
                         }
+                        if($project->getDue_date() > $now)
+                            echo ' / Date limite : ' . $project->getDue_date()->format('d/m/Y H:i');
+                        else
+                            echo ' / Projet clos';
                     ?>
                     </li>
                 <?php

@@ -21,7 +21,8 @@ class Controller
 
     public function connectedOnly()
     {
-        if(!$this->getSession('user')) // you have to be connected
+        // you have to be connected
+        if(!$this->getSession('user'))
         {
             $this->setFlashError('Vous devez être connecté !');
             header("Location: index.php");
@@ -32,7 +33,8 @@ class Controller
 
     public function teacherOnly($user)
     {
-        if($user->getRole() != 'teacher') // you have to be a teacher
+        // you have to be a teacher
+        if($user->getRole() != 'teacher')
         {
             $this->setFlashError('Vous n\'avez pas les droits nécessaires !');
             header("Location: index.php");
@@ -48,13 +50,15 @@ class Controller
 
     public function signInAction()
     {
-        if($this->getSession('user')) // if already connected
+        // if already connected
+        if($this->getSession('user'))
         {
             //echo $this->getSession('user');
             $this->setFlashError('Vous êtes déjà connecté !');
             header("Location: index.php");
         }
 
+        //we load user's personal data
         $usermodel = new UserModel();
         $user = $usermodel->getOneUserBy($_POST['username']);
         if($user != null)
@@ -81,11 +85,11 @@ class Controller
     public function userPanelAction()
     {
         $user = $this->connectedOnly();
-        //on va recuperer les resultats de l'utilisateur
+        //we're going to load users results
         $userModel = new UserModel();
         $user = $userModel->getUserResults($user);
 
-        //on va ensuite recuperer les id de projets auxquel l'utilisateur a participe
+        //we get id's of the project student took part in
         $results = $user->getResults();
         $projectIds = array();
         foreach($results as $result)
@@ -94,6 +98,8 @@ class Controller
             if(!in_array($fullNameArray[2], $projectIds))
                 array_push($projectIds, $fullNameArray[2]);
         }
+
+        //we get all projects available
         $projectModel = new ProjectModel();
         $projects = $projectModel->getAllProjects($projectIds);
 
@@ -103,9 +109,10 @@ class Controller
     public function uploadSourcesAction()
     {
         $user = $this->connectedOnly();
-
+        //if the users has already sent some files
         if($_SERVER['REQUEST_METHOD'] == 'POST')
         {
+            //we get the files the user just uploaded (in his personal tmp dir)
             $url = 'Projects/tmp/' . $user->getUsername();
             $files = scandir($url);
             $zip = new ZipArchive;
@@ -113,54 +120,75 @@ class Controller
             foreach($files as $file)
             {
                 $filename = explode('.', $file);
+                //if the file is really a archive
                 if(end($filename) == 'zip')
                 {
                     $res = $zip->open($url . '/' . $file);
                     if ($res === true && isset($_POST['projectId']))
                     {
+                        //we clear all the tested files already sent before
                         $projectDir = "Projects/". $_POST['projectId'] . '/src/' . $user->getUsername();
                         if(is_dir($projectDir))
                             self::delTree($projectDir);
+                        //we clear all the user results for this project in db
                         $userModel = new UserModel();
                         $userModel->deleteUserResults($user, $_POST['projectId']);
+                        //we create the dir where the tested files will be copied
                         mkdir($projectDir, 0755, true);
                         $zip->extractTo($projectDir);
                         $zip->close();
                         $this->setFlash('Projet uploadé');
+                        //we launch a new test session
                         $this->launchTests($_POST['projectId'], $user->getUsername());
                     } else {
                         $this->setFlash('Projet non uploadé');
                     }
-                    header("Location: index.php?action=results&projectid=" . $_POST['projectId'] . "&username=" . $user->getUsername());
                 }
             }
         }
         else
         {
+            //if the user want to upload some files
+            //we clear all the tmp files from the user personal tmp dir
             if(is_dir('Projects/tmp/' . $user->getUsername()))
                 self::delTree('Projects/tmp/' . $user->getUsername());
+            //if the project id is set
             if(isset($_GET['id']))
+            {
                 $projectId = $_GET['id'];
+                $projectModel = new ProjectModel();
+                $project = $projectModel->getOneProjectBy($projectId);
+                $now = new DateTime('now');
+                //if the project isn't closed (due date)
+                if($project->getDue_date() > $now)
+                    require 'Views/panel/uploadsources.php';
+                else
+                {
+                    $this->setFlashError('Le projet est clos');
+                    header("Location: index.php");
+                }
+            }
             else
             {
                 $this->setFlash('Pas de projet sélectionné');
                 header("Location: index.php");
             }
-            require 'Views/panel/uploadsources.php';
         }
     }
 
     public function uploadTmpAction()
     {
+        //the user just sent some files
         $user = $this->connectedOnly();
-        $this->teacherOnly($user);
+        //pb
+        //$this->teacherOnly($user);
 
+        //if the tmp dir doesn't exist, we create it
         $uploadDir = 'Projects/tmp/' .$user->getUsername();
         if(!is_dir($uploadDir))
             mkdir($uploadDir, 0755, true);
-
+        //we move uploaded files to tmp dir
         $uploadFile = $uploadDir . '/' . basename($_FILES['file']['name']);
-
         move_uploaded_file($_FILES['file']['tmp_name'], $uploadFile);
     }
 
@@ -208,15 +236,16 @@ class Controller
         $filenames = scandir($url);
 
         $filesToProcess = array();
-        //pour chaque fichier à traiter
+        //for each file to process
         foreach($filenames as $filename)
         {
             $filenameExploded = explode('.', $filename);
 
             $extension = end($filenameExploded);
-            //on verifie que l'extension est bien .java
+            //we verify that the file is really a java one
             if($extension == 'java')
             {
+                //we parse the .java file to extract subtests
                 $file = fopen($url . '/' . $filename, 'r');
                 $content = fread($file, filesize($url . '/' . $filename));
                 fclose($file);
@@ -244,11 +273,12 @@ class Controller
             $filesToProcess = $this->serializeTests($user);
             $this->setSession("tests", serialize($filesToProcess));
 
-            //on verif que les champs ont bien ete remplis
+            //if all inputs has been filled
             if(isset($_POST['name']) && isset($_POST['duedate']))
             {
                 $duedate = DateTime::createFromFormat('d/m/Y H:i', $_POST['duedate']);
 
+                //we create a new project in db
                 $projectModel = new ProjectModel(); 
                 $project = new Project();
                 $project->setName($_POST['name']);
@@ -267,6 +297,7 @@ class Controller
         }
         else
         {
+            //we clear the user tmp dir
             if(is_dir('Projects/tmp/' . $user->getUsername()))
                 self::delTree('Projects/tmp/' . $user->getUsername());
             require 'Views/panel/newproject.php';
@@ -277,7 +308,7 @@ class Controller
     {
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
-
+        //the project id must be set
         if(isset($_GET['id']))
             $projectId = $_GET['id'];
         else
@@ -285,15 +316,19 @@ class Controller
             $this->setFlashError('Mauvais paramètres !');
             header("Location: index.php");
         }
-
+        //we get the project in db and his tests
         $projectModel = new ProjectModel();
         $project = $projectModel->getOneProjectBy($projectId);
-
+        $project = $projectModel->getProjectTests($project); 
+        //we get the fee schedule
         $projectTotalWeight = $projectModel->getProjectTotalWeight($project);
-
-        $project = $projectModel->getProjectTests($project);
-
+        //we get all users that took part in and their results
         $users = $projectModel->getProjectParticipants($project);
+        //get participation stats for pie chart
+        $userModel = new UserModel();
+        $nbUsers = $userModel->getNbUsers();
+        //get succesful stats for pie charts
+        $stats = $projectModel->getProjectStats($project);
 
         require 'Views/panel/project.php';
     }
@@ -364,8 +399,10 @@ class Controller
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
 
-        if($_SERVER['REQUEST_METHOD'] == 'POST') // if we confirm the deletion
+        // if we confirm the deletion
+        if($_SERVER['REQUEST_METHOD'] == 'POST')
         {
+            //the project id must be set
             if(isset($_POST["id"]))
                 $projectId = $_POST["id"];
             else
@@ -373,10 +410,11 @@ class Controller
                 $this->setFlash('Pas de projet sélectionné');
                 header("Location: index.php");
             }
-
+            //we delete the project in db
             $projectModel = new ProjectModel();
             $projectModel->deleteProject($projectId);
 
+            //we delete the dir where tests files are stored
             if(is_dir("Projects/" . $projectId))
                 self::delTree("Projects/" . $projectId);
 
@@ -391,10 +429,11 @@ class Controller
     {
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
-
+        //the project id must be set
         if(isset($_GET["id"]))
         {
             $projectId = $_GET["id"];
+            //we get the tests stored in session
             $tests = unserialize($this->getSession("tests"));
             //$this->deleteSession("tests");
             $testsArray = array();
@@ -418,12 +457,14 @@ class Controller
                 $key = array_search($test["class"], $testNames);
                 if($key === false)
                 {
+                    //we create a new test...
                     $newTest = new Test();
                     $newTest->setName($test["class"]);
                     $newTest->setFullname($test["class"] . ":" . $projectId);
                     $newTest->setDescription("description");
 
                     $subtests = $test['subtests'];
+                    //... and his subtests
                     foreach($subtests as $subtest)
                     {
                         $newSubtest = new Subtest();
@@ -437,7 +478,7 @@ class Controller
                     }
                     array_push($testsArray, $newTest);
 
-                    //on copie maintenant la classe de test dans le repertoire du projet
+                    //we move now the test class (.java file) to the project test dir
                     $projectDir = "Projects/". $projectId . '/tests';
                     if(!is_dir($projectDir))
                         mkdir($projectDir, 0755, true);
@@ -464,7 +505,7 @@ class Controller
             }
             
             $projectModel = new ProjectModel();
-            //si on a bien des tests à rajouter
+            //if they really are tests to submit
             if(count($testsArray) && !$error)
             {
                 $projectModel->addTests($projectId, $testsArray);
@@ -497,7 +538,8 @@ class Controller
             $this->setFlashError('Mauvais paramètres !');
             header("Location: index.php");
         }
-
+        
+        //we get the user and his results
         $userModel = new userModel();
         $pupil = $userModel->getUserWithProjectResults($username, $projectId);
 
@@ -506,14 +548,71 @@ class Controller
 
     public function launchTests($projectId, $username)
     {
-        //windows compilation
-        $cmd = 'javac -cp  ./Lib/*;./Projects;./Projects/'. $projectId .'/src/'. $username . ';./Projects/' . $projectId . '/tests ./Projects/Main.java ./Projects/' . $projectId . '/src/' . $username .'/*.java';
-        exec($cmd);
-        exec('java -cp  ./Lib/*;./Projects;./Projects/' . $projectId . '/src/' . $username . ';./Projects/' . $projectId . '/tests Main ' . $projectId . ' ' . $username);
-        //linux compilation
-        //exec("javac -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/8/src/pizza:Projects/8/tests Projects/Main.java Projects/8/src/pizza/Money.java");
-        //exec("java -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/8/src/pizza:Projects/8/tests Main");
+        //we get the project from the db
+        $projectModel = new ProjectModel();
+        $project = $projectModel->getOneProjectBy($projectId);
+        $project = $projectModel->getProjectTests($project);
 
+        //we check if they aren't any missing files
+        $fileMissing = false;
+        $testNames = array();
+        foreach($project->getTests() as $test)
+        {
+            if(!file_exists('Projects/' . $projectId . '/tests/' . $test->getName() . '.java'))
+                $fileMissing = true;
+            array_push($testNames, $test->getName());
+        }
+
+        //if they aren't any files missing
+        if(!$fileMissing)
+        {
+            //java compilation
+            $output = array();
+            //$cmdCompil'javac -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Projects/Main.java Projects/' . $projectId . '/src/' . $username . '/Money.java 2>&1'
+            $cmdCompil = 'javac -cp  ./Lib/*;./Projects;./Projects/'. $projectId .'/src/'. $username . ';./Projects/' . $projectId . '/tests ./Projects/Main.java ./Projects/' . $projectId . '/src/' . $username .'/*.java ./Projects/' . $projectId . '/tests/*.java 2>&1';
+            echo $cmdCompil;
+            exec($cmdCompil, $output);
+            var_dump($output);
+            //if errors are caught
+            if(count($output) > 0)
+            {
+                //we specify what are JAVA errors
+                $error = 'Erreur JAVA :';
+                foreach($output as $outputline)
+                {
+                    $error .= $outputline;
+                }
+                $this->setFlashError($error);
+                header("Location: index.php?action=userpanel");
+            }
+            else
+            {
+                //we launch java programm
+                //$cmdLaunch = 'java -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Main ' . implode(' ', $project->getTests()) . ' 2>&1';
+                $cmdLaunch = 'java -cp  ./Lib/*;./Projects;./Projects/' . $projectId . '/src/' . $username . ';./Projects/' . $projectId . '/tests Main ' . $projectId . ' ' . $username . ' ' . implode(' ', $testNames) . ' 2>&1';
+                echo $cmdLaunch;
+                exec($cmdLaunch, $output);
+                //if errors are caught
+                if(count($output) > 0)
+                {
+                    $error = 'Erreur JAVA :';
+                    foreach($output as $outputline)
+                    {
+                        $error .= $outputline;
+                    }
+                    $this->setFlashError($error);
+                    header("Location: index.php?action=userpanel");
+                }
+                else
+                    header("Location: index.php?action=results&projectid=" . $projectId . "&username=" . $username);
+
+            }
+        }
+        else
+        {
+            $this->setFlashError('Il manque des fichiers nécessaires à la compilation');
+            header("Location: index.php?action=userpanel");
+        }
     }
 
     public function setFlashError($message)
