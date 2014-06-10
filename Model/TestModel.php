@@ -22,7 +22,7 @@
         public function getTestsSubtestsByProjectId($projectId) {
             $sth = $this->execute("SELECT test.project_id, test.name, description, subtest.name as subtest_name, weight, kind 
                                     FROM test 
-                                    INNER JOIN subtest ON test.name = subtest.test_name
+                                    INNER JOIN subtest ON test.name = subtest.test_name AND test.project_id = subtest.project_id
                                     WHERE test.project_id = :projectid", 
                                   array("projectid" => $projectId));
 			

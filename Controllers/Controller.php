@@ -492,9 +492,9 @@ class Controller
                     $subs = $testsDb[$key]->getSubtests();
                     foreach($subs as $sub)
                     {
-                        //echo $sub->getWeight();
+                        echo $sub->getWeight();
                         $sub->setWeight($_POST[$sub->getFullname()]);
-                        //echo ' => ' . $sub->getWeight() . '<br/>';
+                        echo ' => ' . $sub->getWeight() . '<br/>';
                     }
                 }
                 
