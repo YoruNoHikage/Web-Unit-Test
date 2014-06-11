@@ -1,15 +1,21 @@
 <?php
 
-require_once 'Controller.php';
+require_once 'IndexController.php';
+require_once 'UserController.php';
+require_once 'StudentController.php';
+require_once 'TeacherController.php';
 
 class Router 
 {
     
-    private $controller;
+    private $controllers;
 
     public function __construct()
     {
-        $this->controller = new Controller();
+        $this->controllers = array(new IndexController(), 
+                                   new UserController(),
+                                   new StudentController(),
+                                   new TeacherController());
     }
 
     public function route()
@@ -19,16 +25,25 @@ class Router
             if (isset($_GET['action']))
             {
                 $method = $_GET['action'] . 'Action';
-                if (method_exists($this->controller, $method))
+                $actionPerformed = false;
+                foreach($this->controllers as $controller)
                 {
-                    call_user_func_array(array($this->controller, $method), array());
+                    if (method_exists($controller, $method))
+                    {
+                        $actionPerformed = true;
+                        call_user_func_array(array($controller, $method), array());
+                        break;
+                    }
                 }
-                else
+                
+                if(!$actionPerformed)
+                {
                     throw new Exception("Action non valide");
+                }
             }
             else 
             {
-                $this->controller->indexAction();
+                $this->controllers[0]->indexAction();
             }
         }
         catch (Exception $e)
