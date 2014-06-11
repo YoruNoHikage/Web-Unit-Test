@@ -110,13 +110,14 @@ class StudentController extends Controller
         {
             //java compilation
             $output = array();
+            $cmdCompil = '';
             if($conf['system'] === 'windows')
             {
                 $cmdCompil = 'javac -cp ./Lib/*;./Projects;./Projects/'. $projectId .'/src/'. $username . ';./Projects/' . $projectId . '/tests ./Projects/Main.java ./Projects/' . $projectId . '/src/' . $username .'/*.java ./Projects/' . $projectId . '/tests/*.java 2>&1';
             }
             else
             {
-                $cmdCompil = 'javac -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Projects/Main.java Projects/' . $projectId . '/src/' . $username . '/Money.java 2>&1';
+                $cmdCompil = 'javac -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Lib/ini4j.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Projects/Main.java Projects/' . $projectId . '/src/' . $username . '/*.java Projects/' . $projectId . '/tests/*.java 2>&1';
             }
             exec($cmdCompil, $output);
 
@@ -135,13 +136,14 @@ class StudentController extends Controller
             else
             {
                 //we launch java program
+                $cmdLaunch = '';
                 if($conf['system'] === 'windows')
                 {
                     $cmdLaunch = 'java -cp ./Lib/*;./Projects;./Projects/' . $projectId . '/src/' . $username . ';./Projects/' . $projectId . '/tests Main ' . $projectId . ' ' . $username . ' ' . implode(' ', $testNames) . ' 2>&1';
                 }
                 else
                 {
-                    $cmdLaunch = 'java -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Main ' . implode(' ', $project->getTests()) . ' 2>&1';
+                    $cmdLaunch = 'java -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Lib/ini4j.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Main ' . $projectId . ' ' . $username . ' ' . implode(' ', $testNames) . ' 2>&1';
 
                 }
                 exec($cmdLaunch, $output);
