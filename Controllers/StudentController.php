@@ -14,6 +14,12 @@ class StudentController extends Controller
             $url = 'Projects/tmp/' . $user->getUsername();
             $files = scandir($url);
             $zip = new ZipArchive;
+            
+            if(!$files)
+            {
+                $this->setFlashError('Aucun fichier n\'a été envoyé !');
+                header("Location: index.php?action=userpanel");
+            }
 
             foreach($files as $file)
             {
@@ -38,9 +44,15 @@ class StudentController extends Controller
                         $this->setFlash('Projet uploadé');
                         //we launch a new test session
                         $this->launchTests($_POST['projectId'], $user->getUsername());
-                    } else {
-                        $this->setFlash('Projet non uploadé');
                     }
+                    else
+                    {
+                        $this->setFlashError('Projet non uploadé');
+                    }
+                }
+                else
+                {
+                    $this->setFlashError('Projet non uploadé');
                 }
             }
         }
@@ -62,14 +74,14 @@ class StudentController extends Controller
                     require 'Views/panel/uploadsources.php';
                 else
                 {
-                    $this->setFlashError('Le projet est clos');
-                    header("Location: index.php");
+                    $this->setFlashError('Le projet est clos !');
+                    header("Location: index.php?action=userpanel");
                 }
             }
             else
             {
                 $this->setFlash('Pas de projet sélectionné');
-                header("Location: index.php");
+                header("Location: index.php?action=userpanel");
             }
         }
     }
@@ -112,7 +124,7 @@ class StudentController extends Controller
             if(count($output) > 0)
             {
                 //we specify what are JAVA errors
-                $error = 'Erreur JAVA :';
+                $error = 'Erreur JAVA : ';
                 foreach($output as $outputline)
                 {
                     $error .= $outputline;
@@ -152,7 +164,7 @@ class StudentController extends Controller
         }
         else
         {
-            $this->setFlashError('Il manque des fichiers nécessaires à la compilation');
+            $this->setFlashError('Il manque des fichiers nécessaires à la compilation !');
             header("Location: index.php?action=userpanel");
         }
     }

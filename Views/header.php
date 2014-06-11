@@ -80,5 +80,6 @@
                 <?php echo $_SESSION['flash']; ?>
             </p>
             <?php
+                    unset($_SESSION['flash']);
                 }
             ?>

@@ -6,10 +6,6 @@ class Controller
 {
     public function __construct()
     {
-        if($this->getSession('flashToDelete'))
-            $this->deleteSession('flash');
-        else
-            $this->setSession('flashToDelete', true);
     }
 
     public function connectedOnly()
@@ -45,7 +41,6 @@ class Controller
     {
         $this->setSession('flashType', $type);
         $this->setSession('flash', $message);
-        $this->setSession('flashToDelete', false);
     }
 
     public function getSession($name)

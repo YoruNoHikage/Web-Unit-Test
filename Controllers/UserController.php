@@ -84,7 +84,7 @@ class UserController extends Controller
         else
         {
             $this->setFlashError('Mauvais paramètres !');
-            header("Location: index.php");
+            header("Location: index.php?action=userpanel");
         }
 
         //we get the user and his results
