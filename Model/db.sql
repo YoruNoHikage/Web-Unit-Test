@@ -39,6 +39,7 @@ create table project
    name                 varchar(20) not null,
    enabled              bool not null,
    due_date             datetime,
+   target_group			varchar(20) not null,
    primary key (id)
 );
 
@@ -115,6 +116,9 @@ create table users_test
 
 alter table project add constraint fk_users_project foreign key (username)
       references users (username) on delete restrict on update restrict;
+
+alter table project add constraint fk_groups_project foreign key (target_group)
+      references groups (name) on delete restrict on update restrict;
 
 alter table users add constraint fk_role_users foreign key (role)
       references role (role) on delete restrict on update restrict;

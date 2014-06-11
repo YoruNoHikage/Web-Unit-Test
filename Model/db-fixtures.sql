@@ -44,51 +44,57 @@ INSERT INTO `users` (`username`, `hash`, `firstname`, `lastname`, `mail`, `role`
 ('abbo', '', 'jean', 'beaurepaire', 'abbo@mail.fr', 'student'),
 ('bogoss', '', 'stephane', 'perreaux', 'bogoss@mail.fr', 'student'),
 ('jaco', '', 'gilles', 'jacovetti', 'jaco@mail.fr', 'teacher'),
+('teacher', '', 'Tea', 'Cher', 'teacher@school.fr', 'teacher'),
+('student', '', 'Stu', 'Dent', 'student@school.fr', 'student'),
+('studentcir1', '', 'Student', 'CIR1', 'studentcir1@school.fr', 'student'),
 ('pizza', '', 'theo', 'fundone', 'pizza@mail.fr', 'student'),
-('yoyolabricot', '', 'yohann', 'tran', 'yoyo@mail.fr', 'teacher');
+('yoyolabricot', '', 'yohann', 'tran', 'yoyo@mail.fr', 'student');
 
 --
 -- Contenu de la table `project`
 --
 
-INSERT INTO `project` (`id`, `username`, `name`, `enabled`, `due_date`) VALUES
-(1, 'jaco', 'robot laby', 1, '2014-05-07 00:00:00'),
-(2, 'yoyolabricot', 'white tile', 0, '2014-05-19 05:50:00');
+INSERT INTO `project` (`id`, `username`, `name`, `enabled`, `due_date`, `target_group`) VALUES
+(1, 'teacher', 'Labyrinthe', 1, '2030-05-07 00:00:00', 'cir1'),
+(2, 'jaco', 'Démineur', 0, '2030-05-19 05:50:00', 'cir1'),
+(3, 'teacher', 'Tests des tests unitaires', 0, '2030-05-19 05:50:00', 'cir2');
 
 --
 -- Contenu de la table `test`
 --
 
-INSERT INTO `test` (`project_id`, `name`, `description`) VALUES
+/*INSERT INTO `test` (`project_id`, `name`, `description`) VALUES
 (1, 'testDroite', 'testDroite testDroite testDroite'),
-(1, 'testGauche', 'testGauche testGauche testGauche');
+(1, 'testGauche', 'testGauche testGauche testGauche');*/ /* Maybe we can have fixtures + samples files ? */
 
 --
 -- Contenu de la table `subtest`
 --
 
-INSERT INTO `subtest` (`project_id`, `test_name`, `name`, `weight`, `kind`) VALUES
+/*INSERT INTO `subtest` (`project_id`, `test_name`, `name`, `weight`, `kind`) VALUES
 (1, 'TestDroite', 'droitedroite', 5, 'AssertBidule'),
-(1, 'TestDroite', 'droitegauche', 2, 'AssertMachin');
+(1, 'TestDroite', 'droitegauche', 2, 'AssertMachin');*/
 
 --
 -- Contenu de la table `users_groups`
 --
 
 INSERT INTO `users_groups` (`group_name`, `username`) VALUES
-('cir1', 'abbo'),
+('cir2', 'abbo'),
 ('cir2', 'bogoss'),
-('cir1', 'pizza'),
-('cir1', 'yoyolabricot'),
+('cir1', 'student'),
+('cir2', 'student'),
+('cir1', 'studentcir1'),
+('cir2', 'pizza'),
 ('cir2', 'yoyolabricot');
 
 --
 -- Contenu de la table `users_test`
 --
 
-INSERT INTO `projet_web`.`users_test` (`project_id`, `test_name`, `subtest_name`, `username`, `status`, `errors`) VALUES 
+/*INSERT INTO `projet_web`.`users_test` (`project_id`, `test_name`, `subtest_name`, `username`, `status`, `errors`) VALUES 
 ('1', 'testDroite', 'droitedroite', 'pizza', '1', NULL), 
-('1', 'testDroite', 'droitegauche', 'pizza', '0', 'Erreur pizza, trop de pepperonis !');
+('1', 'testDroite', 'droitegauche', 'pizza', '0', 'Erreur pizza, trop de pepperonis !');*/
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
