@@ -143,7 +143,7 @@ class StudentController extends Controller
                 }
                 else
                 {
-                    $cmdLaunch = 'java -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Lib/ini4j.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Main ' . implode(' ', $testNames) . ' 2>&1';
+                    $cmdLaunch = 'java -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Lib/ini4j.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Main ' . $projectId . ' ' . $username . ' ' . implode(' ', $testNames) . ' 2>&1';
 
                 }
                 exec($cmdLaunch, $output);
