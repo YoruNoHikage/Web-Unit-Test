@@ -43,6 +43,48 @@ class Controller
             return true;
     }
 
+    public function csvExportAction()
+    {
+        $user = $this->connectedOnly();
+        $this->teacherOnly($user);
+        
+        //the project id must be set
+        if(!isset($_GET['id']))
+            return;
+        else
+            $projectId = $_GET['id'];
+        
+        //we get the project in db and his tests
+        $projectModel = new ProjectModel();
+        $project = $projectModel->getOneProjectBy($projectId);
+        $project = $projectModel->getProjectTests($project); 
+        //we get the fee schedule
+        $projectTotalWeight = $projectModel->getProjectTotalWeight($project);
+        //we get all users that took part in and their results
+        $users = $projectModel->getProjectParticipants($project);
+        
+        $content = array(array('Résultat du projet : ' . $project->getName()), 
+                         array('nom', 'prénom', 'note'));
+        
+        foreach($users as $user)
+        {
+            array_push($content, array($user->getFirstName(), 
+                                       $user->getLastName(), 
+                                       $user->getFinalMark($project) . '/' . $projectTotalWeight));
+        }
+        
+        header('Content-Type: text/csv');
+        header('Content-Disposition: attachment;filename=test.csv');
+
+        $out = fopen('php://output', 'w');
+        foreach ($content as $fields)
+        {
+            fputcsv($out, $fields);
+        }
+
+        fclose($out);
+    }
+
     public function indexAction()
     {
         require 'Views/index.php';
@@ -349,7 +391,7 @@ class Controller
             {
                 $test = $testModel->getTestSubtests($test);
             }
-            
+
             if($_SERVER['REQUEST_METHOD'] == 'POST') // first form was sent
             {
                 $filesToProcess = $this->serializeTests($user);
@@ -373,7 +415,7 @@ class Controller
                     $project->setId($_POST['projectid']);
                     $project->setName($_POST['name']);
                     $project->setDue_date($duedate);
-                    
+
                     $projectModel->updateProject($project);
                 }
                 else
@@ -441,7 +483,7 @@ class Controller
             // we get the tests in database to avoid redundancy and to update the old ones
             $testModel = new TestModel();
             $testsDb = $testModel->getTestsSubtestsByProjectId($projectId);
-            
+
             // just the names
             $testNames = array();
             foreach($testsDb as $testDb)
@@ -449,7 +491,7 @@ class Controller
                 if(!in_array($testDb->getName(), $testNames))
                     array_push($testNames, $testDb->getName());
             }
-            
+
             $error = null;
             foreach($tests as $test)
             {
@@ -482,7 +524,7 @@ class Controller
                     $projectDir = "Projects/". $projectId . '/tests';
                     if(!is_dir($projectDir))
                         mkdir($projectDir, 0755, true);
-                    
+
                     $location = "Projects/tmp/" . $user->getUsername(). "/" . $test["class"] . ".java";
                     if(file_exists($location))
                         copy($location, $projectDir . '/' . $test["class"] . ".java");
@@ -497,13 +539,13 @@ class Controller
                         //echo ' => ' . $sub->getWeight() . '<br/>';
                     }
                 }
-                
+
                 if(!$test["reprocess"]) // if the files in tmp are new, we delete them
                 {
                     unlink("Projects/tmp/" . $user->getUsername() . "/" . $test["class"] . ".java");
                 }
             }
-            
+
             $projectModel = new ProjectModel();
             //if they really are tests to submit
             if(count($testsArray) && !$error)
@@ -511,7 +553,7 @@ class Controller
                 $projectModel->addTests($projectId, $testsArray);
                 $this->setFlash("Les tests ont bien été ajoutés !");
             }
-            
+
             // We update the others
             $projectModel->updateTestsSubtests($projectId, $testsDb);
 
@@ -538,7 +580,7 @@ class Controller
             $this->setFlashError('Mauvais paramètres !');
             header("Location: index.php");
         }
-        
+
         //we get the user and his results
         $userModel = new userModel();
         $pupil = $userModel->getUserWithProjectResults($username, $projectId);
@@ -549,7 +591,7 @@ class Controller
     public function launchTests($projectId, $username)
     {
         $conf = parse_ini_file('conf.ini');
-        
+
         //we get the project from the db
         $projectModel = new ProjectModel();
         $project = $projectModel->getOneProjectBy($projectId);
@@ -579,7 +621,7 @@ class Controller
                 $cmdCompil = 'javac -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Projects/Main.java Projects/' . $projectId . '/src/' . $username . '/Money.java 2>&1';
             }
             exec($cmdCompil, $output);
-            
+
             //if errors are caught
             if(count($output) > 0)
             {
@@ -605,7 +647,7 @@ class Controller
 
                 }
                 exec($cmdLaunch, $output);
-                
+
                 //if errors are caught
                 if(count($output) > 0)
                 {
