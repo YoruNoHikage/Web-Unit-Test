@@ -5,10 +5,11 @@ import org.junit.runner.notification.Failure;
 import java.util.ArrayList;
 
 import java.util.regex.*;
+import java.io.IOException;
 
 public class Main{
 	
-	public static void main(String[] args) throws ClassNotFoundException {
+	public static void main(String[] args) throws ClassNotFoundException, IOException {
 		
 		ArrayList<String> testsAvailable = new ArrayList<String>();
 		GestionBDD gestionBDD = new GestionBDD();
