@@ -548,6 +548,8 @@ class Controller
 
     public function launchTests($projectId, $username)
     {
+        $conf = parse_ini_file('conf.ini');
+        
         //we get the project from the db
         $projectModel = new ProjectModel();
         $project = $projectModel->getOneProjectBy($projectId);
@@ -568,11 +570,16 @@ class Controller
         {
             //java compilation
             $output = array();
-            //$cmdCompil'javac -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Projects/Main.java Projects/' . $projectId . '/src/' . $username . '/Money.java 2>&1'
-            $cmdCompil = 'javac -cp  ./Lib/*;./Projects;./Projects/'. $projectId .'/src/'. $username . ';./Projects/' . $projectId . '/tests ./Projects/Main.java ./Projects/' . $projectId . '/src/' . $username .'/*.java ./Projects/' . $projectId . '/tests/*.java 2>&1';
-            echo $cmdCompil;
+            if($conf['system'] === 'windows')
+            {
+                $cmdCompil = 'javac -cp ./Lib/*;./Projects;./Projects/'. $projectId .'/src/'. $username . ';./Projects/' . $projectId . '/tests ./Projects/Main.java ./Projects/' . $projectId . '/src/' . $username .'/*.java ./Projects/' . $projectId . '/tests/*.java 2>&1';
+            }
+            else
+            {
+                $cmdCompil = 'javac -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Projects/Main.java Projects/' . $projectId . '/src/' . $username . '/Money.java 2>&1';
+            }
             exec($cmdCompil, $output);
-            var_dump($output);
+            
             //if errors are caught
             if(count($output) > 0)
             {
@@ -587,11 +594,18 @@ class Controller
             }
             else
             {
-                //we launch java programm
-                //$cmdLaunch = 'java -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Main ' . implode(' ', $project->getTests()) . ' 2>&1';
-                $cmdLaunch = 'java -cp  ./Lib/*;./Projects;./Projects/' . $projectId . '/src/' . $username . ';./Projects/' . $projectId . '/tests Main ' . $projectId . ' ' . $username . ' ' . implode(' ', $testNames) . ' 2>&1';
-                echo $cmdLaunch;
+                //we launch java program
+                if($conf['system'] === 'windows')
+                {
+                    $cmdLaunch = 'java -cp ./Lib/*;./Projects;./Projects/' . $projectId . '/src/' . $username . ';./Projects/' . $projectId . '/tests Main ' . $projectId . ' ' . $username . ' ' . implode(' ', $testNames) . ' 2>&1';
+                }
+                else
+                {
+                    $cmdLaunch = 'java -cp Lib/hamcrest-core-1.3.jar:Lib/junit-4.11.jar:Lib/jdbc.jar:Lib/mysql-connector-java-5.1.26-bin.jar:Projects:Projects/' . $projectId . '/src/' . $username . ':Projects/' . $projectId . '/tests Main ' . implode(' ', $project->getTests()) . ' 2>&1';
+
+                }
                 exec($cmdLaunch, $output);
+                
                 //if errors are caught
                 if(count($output) > 0)
                 {

@@ -5,7 +5,12 @@
 
 		private static function getDb(){
 			if(self::$db === null){
-				self::$db = new PDO("mysql:host=localhost;dbname=projet_web;charset=utf8", "root", "");
+                $conf = parse_ini_file('conf.ini');
+				
+                self::$db = new PDO("mysql:host=" . $conf['host'] .
+                                    ";dbname=" . $conf['dbname'] . ";charset=utf8",
+                                    $conf['user'],
+                                    $conf['password']);
 			}
 			return self::$db;
 		}
