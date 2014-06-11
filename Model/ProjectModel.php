@@ -246,33 +246,30 @@
 		}
         
         public function updateTestsSubtests($projectId, $tests)
-        {
-            $sql = "UPDATE subtest
-                    SET weight = CASE name ";
-            
+        {            
             $display_names = array();
             
-            $subtests = array();
             foreach($tests as $test)
             {
+            	$subtests = array();
+            	$sql = "UPDATE subtest
+                    SET weight = CASE name ";
+
                 $subs = $test->getSubtests();
+
                 foreach($subs as $sub)
-                    array_push($subtests, $sub);
-            }
+                {
+	                // TO DO : Fix this
+	                // doesn't work with redundancy
+	                $sql .= "WHEN '" . $sub->getName() . "' THEN " . $sub->getWeight() . " ";
+	                $display_names["'" . $sub->getName() . "'"] = $sub->getWeight();
+	            }
+
+                $names = implode(',', array_keys($display_names));
             
-            foreach($subtests as $sub)
-            {
-                // TO DO : Fix this
-                // doesn't work with redundancy
-                $sql .= "WHEN '" . $sub->getName() . /*"' AND test_name = '" . $sub->getTest()->getName() .*/ "' THEN " . $sub->getWeight() . " ";
-                $display_names["'" . $sub->getName() . "'"] = $sub->getWeight();
-            }
-            $names = implode(',', array_keys($display_names));
-            
-            $sql .= "END WHERE name IN (" . $names . ")";
-            
-            echo $sql;
-            $sth = $this->execute($sql);
+	            $sql .= "END WHERE name IN (" . $names . ") AND test_name = '" . $test->getName() . "' AND project_id = " . $projectId;
+	        	$sth = $this->execute($sql);
+            }          
         }
 
 		public function deleteProject($projectId)

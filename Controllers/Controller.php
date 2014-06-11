@@ -35,7 +35,7 @@ class Controller
         else
             return true;
     }
-
+    
     public function setFlashError($message)
     {
         $this->setFlash($message, 'danger');

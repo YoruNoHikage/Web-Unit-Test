@@ -1,10 +1,21 @@
 import java.sql.*;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import org.ini4j.Wini;
 
 public class GestionBDD {
 	
-	public GestionBDD()
+	private Wini ini;
+	private String host, dbname, user, password;
+	
+	public GestionBDD() throws IOException
 	{
+		Wini ini = new Wini(new File("conf.ini"));
+        host = ini.get("database", "host");
+        dbname = ini.get("database", "dbname");
+        user = ini.get("database", "user");
+        password = ini.get("database", "password");
 	}
 	
 	@SuppressWarnings("finally")
@@ -19,7 +30,7 @@ public class GestionBDD {
 		try
 		{
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
-			con = DriverManager.getConnection("jdbc:mysql://localhost/projet_web", "root", "");
+			con = DriverManager.getConnection("jdbc:mysql://" + host + "/" + dbname, user, password);
 			st = con.createStatement();
 			
 			//System.out.println("SELECT subtest.name FROM subtest WHERE subtest.test_name = '" + testName + "' AND subtest.project_id=" + projectId);
