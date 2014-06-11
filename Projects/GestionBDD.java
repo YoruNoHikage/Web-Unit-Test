@@ -72,7 +72,7 @@ public class GestionBDD {
 		try
 		{
 			Class.forName("com.mysql.jdbc.Driver").newInstance();
-			con = DriverManager.getConnection("jdbc:mysql://localhost/projet_web", "root", "");
+			con = DriverManager.getConnection("jdbc:mysql://" + host + "/" + dbname, user, password);
 			st = con.createStatement();
 			//System.out.println("INSERT INTO users_test (project_id, test_name, subtest_name, username, status, errors) VALUES ('" + projectId + "', '" + testName + "', '" + subtestName + "', '" + username + "', " + Integer.toString(status) + ", '" + errors + "')");
 			st.executeUpdate("INSERT INTO users_test (project_id, test_name, subtest_name, username, status, errors) VALUES ('" + projectId + "', '" + testName + "', '" + subtestName + "', '" + username + "', " + Integer.toString(status) + ", '" + errors + "')");
