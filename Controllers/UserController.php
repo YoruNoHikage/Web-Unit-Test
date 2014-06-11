@@ -64,10 +64,26 @@ class UserController extends Controller
             if(!in_array($fullNameArray[2], $projectIds))
                 array_push($projectIds, $fullNameArray[2]);
         }
-
+        
         //we get all projects available
-        $projectModel = new ProjectModel();
-        $projects = $projectModel->getAllProjects($projectIds);
+        $projects = array();
+        if($user->getRole() == 'teacher')
+        {
+            $projects = $userModel->getUserProjects($user)->getProjects();
+        }
+        else
+        {
+            $projectModel = new ProjectModel();
+            $groups = $user->getGroups();
+            foreach($groups as $group)
+            {
+                $projectsFromGroup = $projectModel->getProjectsFromGroup($group);
+                foreach($projectsFromGroup as $projectFromGroup)
+                {
+                    array_push($projects, $projectFromGroup);
+                }
+            }
+        }
 
         require 'Views/panel/index.php';
     }

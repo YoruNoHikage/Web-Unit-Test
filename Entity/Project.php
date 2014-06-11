@@ -7,6 +7,7 @@
 		private $due_date;
 		private $owner;
 		private $tests;
+        private $targetGroup;
 
 		function __construct(){
 			$this->tests = array();
@@ -75,6 +76,14 @@
 					array_splice($this->tests, $index, 1);
 			}
 		}
+        
+        public function getTargetGroup() {
+            return $this->targetGroup;
+        }
+        
+        public function setTargetGroup($group) {
+            $this->targetGroup = $group;
+        }
 
 		public function toString(){
 		

@@ -136,6 +136,33 @@
 
 			return $participants;
 		}
+        
+        public function getProjectsFromGroup($group)
+        {
+            $sth = $this->execute("SELECT * FROM project WHERE project.target_group = :groupname",
+                                  array("groupname" => $group->getName()));
+            
+            $projectsDb = $sth->fetchAll();
+            
+            $projects = array();
+            foreach($projectsDb as $projectDb)
+            {
+                $project = new Project();
+                $project->setId($projectDb['id']);
+                $project->setName($projectDb['name']);
+                $project->setOwner($projectDb['username']);
+                $project->setEnabled($projectDb['enabled']);
+                $project->setDue_date($projectDb['due_date']);
+                
+                $group = new Group();
+                $group->setName($projectDb['target_group']);
+                $project->setTargetGroup($group);
+                
+                array_push($projects, $project);
+            }
+            
+            return $projects;
+        }
 
 		public function getProjectTests($project){
 			$sth = $this->execute("SELECT test.name, test.description, test.project_id FROM test WHERE test.project_id = :projectId", 
@@ -186,7 +213,8 @@
 		public function newProject($project)
 		{
 			//envoi du projet
-			$sth = $this->execute("INSERT INTO project (username, name, enabled, due_date) VALUES (:username, :projectName, :enabled, :due_date)", array(
+			$sth = $this->execute("INSERT INTO project (username, name, enabled, due_date, target_group) 
+                                    VALUES (:username, :projectName, :enabled, :due_date, 'cir2')", array(
 				"username" => $project->getOwner()->getUsername(),
 				"projectName" => $project->getName(),
 				"enabled" => $project->getEnabled(),

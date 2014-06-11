@@ -33,19 +33,30 @@
 		
 		public function getOneUserBy($username)
         {
-            $sth = $this->execute("SELECT username, firstname, lastname, mail, role FROM users WHERE username = :username",
+            $sth = $this->execute("SELECT u.username, u.hash, u.firstname, u.lastname, u.mail, u.role, ug.group_name 
+                                    FROM users u 
+                                    LEFT JOIN users_groups ug ON u.username = ug.username 
+                                    LEFT JOIN groups g ON ug.group_name = g.name
+                                    WHERE u.username = :username",
                                     array('username' => $username));
-            $req = $sth->fetch();
+            $userDb = $sth->fetchAll();
             
-            if($req)
+            if($userDb)
             {
-                var_dump($req);
                 $user = new User();
-                $user->setUsername($req['username']);
-                $user->setFirstname($req['firstname']);
-				$user->setLastname($req['lastname']);
-				$user->setMail($req['mail']);
-                $user->setRole($req['role']);
+                $user->setUsername($userDb[0]['username']);
+                $user->setFirstname($userDb[0]['firstname']);
+				$user->setLastname($userDb[0]['lastname']);
+				$user->setMail($userDb[0]['mail']);
+                $user->setRole($userDb[0]['role']);
+                foreach($userDb as $userGroup)
+                {
+                    $group = new Group();
+                    $group->setName($userGroup['group_name']);
+                    $user->addGroup($group);
+                }
+                
+                var_dump($user);
                 
                 return $user;
             }
