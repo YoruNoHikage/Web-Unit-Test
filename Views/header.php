@@ -6,7 +6,7 @@
         
         <title>Mon super site</title>
         
-        <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+        <link rel="stylesheet" href="Views/styles/bootstrap.min.css">
         <!-- TO DO : conditions -->
         <link rel="stylesheet" href="Views/styles/upload.css">
         <link rel="stylesheet" href="Views/styles/bootstrap-datetimepicker.min.css">
@@ -24,7 +24,7 @@
     <body>
         <div class="container">
             <header class="row">
-                <div class="col-md-6">
+                <div class="col-md-6" style="width: 100%">
                     <h1><a href="index.php">Tests & Co - Envoyez, testez</a></h1>
                 </div>
                 <div class="col-md-6 bg-primary text-center logbox">

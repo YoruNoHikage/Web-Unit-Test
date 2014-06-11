@@ -2,7 +2,7 @@
             <hr/>
             <footer class="row">
                 <div class="col-md-12 text-center">
-                    <script src="http://thestartuplegitimizer.com/js/legitimizeme.min.js?pubs=bu-tc-hu-be-bf-te-cn-ny-bb"></script>
+                    <script src="http://thestartuplegitimizer.com/js/legitimizeme.min.js?pubs=bu-tc-hu-be-bf-te-cn-ny-bb-fo"></script>
                     <style>
                         .legitimizer-container {
                             width: 100%;
@@ -13,8 +13,8 @@
             </footer>
         </div>
 
-        <script src="//code.jquery.com/jquery-2.1.1.min.js"></script>
-        <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+        <script src="Views/scripts/jquery-2.1.1.min.js"></script>
+        <script src="Views/scripts/bootstrap.min.js"></script>
         <script>
             $('.tip').tooltip({html: true});
         </script>
