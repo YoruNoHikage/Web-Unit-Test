@@ -158,6 +158,11 @@ class TeacherController extends Controller
                 $project->setDue_date($duedate);
                 $project->setOwner($user);
                 $projectModel->newProject($project);
+
+                if(count($filesToProcess) == 0)
+                {
+                    header("Location: index.php?action=addcustomtest&id=" . $project->getId());
+                }
             }
             else
             {
@@ -388,6 +393,92 @@ class TeacherController extends Controller
             $projectModel->updateTestsSubtests($projectId, $testsDb);
 
             header("Location: index.php?action=userpanel");
+        }
+        else
+        {
+            $this->setFlashError('Pas de projet sélectionné !');
+            header("Location: index.php");
+        }
+    }
+
+    public function addCustomTestAction()
+    {
+        $user = $this->connectedOnly();
+        $this->teacherOnly($user);
+
+        if(isset($_GET['id']))
+        {
+            $projectId = intval($_GET['id']);
+            if($_SERVER['REQUEST_METHOD'] == 'POST')
+            {
+                $fileContent = "";
+                $fileContent .= "import static org.junit.Assert.*;\n
+                                import org.junit.After;\n
+                                import org.junit.Before;
+                                import org.junit.Test;
+
+
+                                public class ";
+                $fileContent .= $_POST['testName'];
+                $fileContent .= "{
+                    ";
+                $fileContent .= $_POST['declarations'];
+                $fileContent .= "@Before
+                                public void setUp() throws Exception {
+                    ";
+                $fileContent .= $_POST['beforeTestContent'];
+                $fileContent .= "}
+                                @After
+                                public void tearDown() throws Exception {
+                    ";
+                $fileContent .= $_POST['afterTestContent'];
+                $fileContent .= "}
+                                @Test
+                                public void ";
+                $fileContent .= $_POST['subtestName'];
+                $fileContent .= "() { 
+                    ";
+                $fileContent .= $_POST['subtestContent'];
+                $fileContent .= "}
+                    }";
+
+                $path = 'Projects/' . $projectId . '/tests';
+                
+                if(!is_dir($path))
+                    mkdir($path, 0755, true);
+
+                if(!file_exists($path . '/' . $_POST['testName'] . '.java'))
+                {
+                    file_put_contents($path . '/' . $_POST['testName'] . '.java', $fileContent);
+                    $newTest = new Test();
+                    $newTest->setName($_POST['testName']);
+                    $newTest->setFullname($_POST['testName'] . ":" . $projectId);
+                    $newTest->setDescription("description");
+                    
+                    $newSubtest = new Subtest();
+                    $newSubtest->setName($_POST['subtestName']);
+                    $fullname = $_POST['subtestName'] . ":" . $_POST["testName"] . ":" . $projectId;
+                    $newSubtest->setFullname($fullname);
+                    $newSubtest->setWeight($_POST['weight']);
+                    $newSubtest->setKind("kind");
+                    $newTest->addSubtest($newSubtest);
+
+                    $projectModel = new ProjectModel();
+                    $projectModel->addTests($projectId, array($newTest));
+
+                    $this->setFlash('Le test a été créé');
+                    header("Location: index.php?action=userpanel");
+                }
+                else
+                {
+                    $this->setFlashError('Un test de ce nom existe déjà !');
+                    header("Location: index.php?action=userpanel");
+                }
+            }
+            else
+            {
+                require 'Views/panel/customTest.php';
+            }
         }
         else
         {

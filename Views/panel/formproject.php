@@ -4,7 +4,7 @@
         if($_GET['action'] == 'editproject')
             
     ?>
-
+    
     <form class="form-horizontal" 
           action="index.php?action=<?php echo $_GET['action']; if(isset($_GET['id'])) { echo '&id=' . $_GET['id']; } ?>"
           method="post" role="form">
@@ -35,7 +35,10 @@
 
         <div class="form-group">
             <div class="jumbotron">
-
+                <?php
+                    if($_GET['action'] == 'editproject')
+                        echo '<a class="btn btn-primary" href="index.php?action=addcustomtest&id='. $project->getId() .'">Ajouter rapidement un test</a>';
+                ?>
                 <?php require_once 'formuploadarea.php' ?>
 
                 <div id="upload-panelzone">

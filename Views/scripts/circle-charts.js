@@ -20,7 +20,7 @@ for(var i = 0; i < circles.length; i++)
         value:      circleValue,
         maxValue:   100,
         width:      15,
-        text:       function(value){return value + '%';},
+        text:       function(value){return Math.round(value) + '%';},
         colors:     colors,
         duration:   400,
         wrpClass:   'circles-wrp',
