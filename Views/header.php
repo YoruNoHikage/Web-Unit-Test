@@ -56,10 +56,10 @@
                             <label class="sr-only" for="username">Nom d'utilisateur</label>
                             <input type="text" class="form-control" id="username" name="username" placeholder="Nom d'utilisateur">
                         </div>
-                        <div class="form-group">
+                        <!--<div class="form-group">
                             <label class="sr-only" for="password">Mot de passe</label>
                             <input type="password" class="form-control" id="password" name="password" placeholder="Mot de passe">
-                        </div>
+                        </div>-->
                         <button type="submit" class="btn btn-default">Connexion</button>
                     </form>
                 <?php
