@@ -1,10 +1,5 @@
 <div class="col-md-8 col-md-push-2">
 
-    <?php
-        if($_GET['action'] == 'editproject')
-            
-    ?>
-    
     <form class="form-horizontal" 
           action="index.php?action=<?php echo $_GET['action']; if(isset($_GET['id'])) { echo '&id=' . $_GET['id']; } ?>"
           method="post" role="form">
@@ -30,6 +25,24 @@
                         <span class="glyphicon glyphicon-calendar"></span>
                     </span>
                 </div>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="group" class="col-sm-3 control-label">Groupe cible</label>
+            <div class="col-sm-9">
+                <select name="group" id="group" class="form-control">
+                    <?php foreach($groups as $group) { ?>
+                        <option 
+                           value="<?php echo $group->getName(); ?>"
+                           <?php 
+                                if($_GET['action'] == 'editproject' 
+                                   && $project->getTargetGroup()->getName() === $group->getName()) { 
+                                    echo 'selected'; } ?>>
+                            <?php echo $group->getName(); ?>
+                        </option>
+                    <?php } ?>
+                </select>
             </div>
         </div>
 

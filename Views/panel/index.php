@@ -64,7 +64,7 @@
                        </span>
                     <?php
                         if($project->getDue_date() > $now)
-                            echo ' - Date limite : ' . $project->getDue_date()->format('d/m/Y H:i');
+                            echo ' - Date limite : le ' . $project->getDue_date()->format('d/m/Y à H:i');
                         else
                             echo ' - Projet clos';
                     ?>

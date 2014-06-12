@@ -3,6 +3,7 @@
 require_once 'Controller.php';
 
 require_once 'Model/TestModel.php';
+require_once 'Model/GroupModel.php';
 
 class TeacherController extends Controller
 {
@@ -139,6 +140,10 @@ class TeacherController extends Controller
     {
         $user = $this->connectedOnly();
         $this->teacherOnly($user);
+        
+        // we need the groups
+        $groupModel = new GroupModel();
+        $groups = $groupModel->getAllGroups();
 
         if($_SERVER['REQUEST_METHOD'] == 'POST') // first form was sent
         {
@@ -149,6 +154,8 @@ class TeacherController extends Controller
             if(isset($_POST['name']) && isset($_POST['duedate']))
             {
                 $duedate = DateTime::createFromFormat('d/m/Y H:i', $_POST['duedate']);
+                $group = new Group();
+                $group->setName($_POST['group']);
 
                 //we create a new project in db
                 $projectModel = new ProjectModel(); 
@@ -157,6 +164,7 @@ class TeacherController extends Controller
                 $project->setEnabled(1);
                 $project->setDue_date($duedate);
                 $project->setOwner($user);
+                $project->setTargetGroup($group);
                 $projectModel->newProject($project);
 
                 if(count($filesToProcess) == 0)
@@ -177,6 +185,7 @@ class TeacherController extends Controller
             //we clear the user tmp dir
             if(is_dir('Projects/tmp/' . $user->getUsername()))
                 self::delTree('Projects/tmp/' . $user->getUsername());
+            
             require 'Views/panel/newproject.php';
         }
     }
@@ -217,6 +226,10 @@ class TeacherController extends Controller
 
         if(isset($_GET['id']))
         {
+            // we need the groups
+            $groupModel = new GroupModel();
+            $groups = $groupModel->getAllGroups();
+            
             $projectModel = new ProjectModel();
             $project = $projectModel->getOneProjectBy($_GET['id']);
             //gerer si id defaillant ?
@@ -243,13 +256,16 @@ class TeacherController extends Controller
                 }
                 $this->setSession("tests", serialize($filesToProcess)); // we keep the new and edited files
 
-                if(isset($_POST['name']) && isset($_POST['duedate']))
+                if(isset($_POST['name']) && isset($_POST['duedate']) && isset($_POST['group']))
                 {
                     $duedate = DateTime::createFromFormat('d/m/Y H:i', $_POST['duedate']);
+                    $group = new Group();
+                    $group->setName($_POST['group']);
 
                     $project->setId($_POST['projectid']);
                     $project->setName($_POST['name']);
                     $project->setDue_date($duedate);
+                    $project->setTargetGroup($group);
 
                     $projectModel->updateProject($project);
                 }
