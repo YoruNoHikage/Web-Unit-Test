@@ -45,14 +45,18 @@
 		{
 			$sth = $this->execute("SELECT * FROM project WHERE project.id = :projectId", array("projectId" => $id));
 			$req = $sth->fetch();
+            
+            $group = new Group();
+            $group->setName($req['target_group']);
 
 			$project = new Project();
 			$project->setId($req["id"]);
 			$project->setName($req["name"]);
 			$project->setEnabled($req["enabled"]);
 			$project->setDue_date(DateTime::createFromFormat("Y-m-d H:i:s", $req["due_date"]));
+            $project->setTargetGroup($group);
 
-			return $project;			
+			return $project;
 		}
 
 		public function getProjectsBy($ids)
@@ -214,11 +218,12 @@
 		{
 			//envoi du projet
 			$sth = $this->execute("INSERT INTO project (username, name, enabled, due_date, target_group) 
-                                    VALUES (:username, :projectName, :enabled, :due_date, 'cir2')", array(
+                                    VALUES (:username, :projectName, :enabled, :due_date, :group)", array(
 				"username" => $project->getOwner()->getUsername(),
 				"projectName" => $project->getName(),
 				"enabled" => $project->getEnabled(),
-				"due_date" => $project->getDue_date()->format("Y-m-d H:i:s")
+				"due_date" => $project->getDue_date()->format("Y-m-d H:i:s"),
+                "group" => $project->getTargetGroup()->getName()
 			));
 			//on recupere son id
 			$sth = $this->execute("SELECT LAST_INSERT_ID() as lastInsertId");
@@ -228,12 +233,13 @@
         
         public function updateProject($project)
 		{
-			 $sth = $this->execute("UPDATE project SET name = :projectName, enabled = :enabled, due_date = :due_date
+			 $sth = $this->execute("UPDATE project SET name = :projectName, enabled = :enabled, due_date = :due_date, target_group = :targetgroup
                                     WHERE id = :id",
                                    array("id" => $project->getId(), 
                                          "projectName" => $project->getName(),
                                          "enabled" => $project->getEnabled(),
-                                         "due_date" => $project->getDue_date()->format("Y-m-d H:i:s")
+                                         "due_date" => $project->getDue_date()->format("Y-m-d H:i:s"),
+                                         "targetgroup" => $project->getTargetGroup()->getName()
                                         ));
 			$req = $sth->fetch();
 		}
