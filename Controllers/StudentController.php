@@ -21,12 +21,14 @@ class StudentController extends Controller
                 header("Location: index.php?action=userpanel");
             }
 
+            $atLeastOneZipFile = false;
             foreach($files as $file)
             {
                 $filename = explode('.', $file);
                 //if the file is really a archive
                 if(end($filename) == 'zip')
                 {
+                    $atLeastOneZipFile = true;
                     $res = $zip->open($url . '/' . $file);
                     if ($res === true && isset($_POST['projectId']))
                     {
@@ -41,9 +43,31 @@ class StudentController extends Controller
                         mkdir($projectDir, 0755, true);
                         $zip->extractTo($projectDir);
                         $zip->close();
-                        $this->setFlash('Projet uploadé');
-                        //we launch a new test session
-                        $this->launchTests($_POST['projectId'], $user->getUsername());
+
+                        echo 'pwet';
+
+                        //zip content verification
+                        $files = scandir($projectDir);
+                        $atLeastOneJavaFile = false;
+                        foreach ($files as $file)
+                        {
+                            $filenameExploded = explode('.', $file);
+                            if(end($filenameExploded) == 'java')
+                                $atLeastOneJavaFile = true;
+                        }
+                        if ($atLeastOneJavaFile)
+                        {
+                            $this->setFlash('Projet uploadé');
+                            //we launch a new test session
+                            $this->launchTests($_POST['projectId'], $user->getUsername());
+                        }
+                        else
+                        {
+                            if(is_dir($projectDir))
+                                self::delTree($projectDir);
+                            $this->setFlashError('L\'archive ne contient pas de fichier(s) JAVA à sa racine');
+                            header("Location: index.php?action=userpanel");
+                        }
                     }
                     else
                     {
@@ -54,6 +78,11 @@ class StudentController extends Controller
                 {
                     $this->setFlashError('Projet non uploadé');
                 }
+            }
+            if(!$atLeastOneZipFile)
+            {
+                $this->setFlashError('Les sources doivent être uploadées au format zip !');
+                header("Location: index.php?action=userpanel");
             }
         }
         else
